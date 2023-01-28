@@ -1,8 +1,8 @@
 var config = {
     type: Phaser.AUTO,
     parent: 'phaser-example',
-    width: 800,
-    height: 600,
+    width: 1000,
+    height: 800,
     physics: {
         default: 'arcade',
         arcade: {
@@ -20,14 +20,20 @@ var config = {
 var game = new Phaser.Game(config);
 
 function preload() {
-    this.load.image('ship', 'assets/spaceShips_001.png');
+    this.load.image('background', 'assets/grass.png');
+
+    this.load.image('ship', 'assets/pink_snake_tongue_pixel.png');
     this.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
-    this.load.image('apple', 'assets/apple.png');
+    this.load.image('apple', 'assets/signpost32px.png');
 }
 
 function create() {
     var self = this;
     this.socket = io();
+
+    // let backgroundGrass = this.add.image(0, 0, 'background');
+    // backgroundGrass.scale = 10;
+
     this.otherPlayers = this.physics.add.group();
     this.socket.on('currentPlayers', function (players) {
         Object.keys(players).forEach(function (id) {
@@ -80,11 +86,12 @@ function create() {
 
 function addPlayer(self, playerInfo) {
     self.ship = self.physics.add.image(playerInfo.x, playerInfo.y, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
-    // if (playerInfo.team === 'blue') {
-    //     self.ship.setTint(0x0000ff);
-    // } else {
-    //     self.ship.setTint(0xff0000);
-    // }
+    if (playerInfo.team === 'blue') {
+        self.ship.setTint(0x0000ff);
+    } else {
+        self.ship.setTint(0xff0000);
+    }
+    // self.ship.setTint(0x0000ff);
     self.ship.setDrag(100);
     self.ship.setAngularDrag(100);
     self.ship.setMaxVelocity(200);
@@ -92,16 +99,17 @@ function addPlayer(self, playerInfo) {
 
 function addOtherPlayers(self, playerInfo) {
     const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'otherPlayer').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
-    // if (playerInfo.team === 'blue') {
-    //     otherPlayer.setTint(0x0000ff);
-    // } else {
-    //     otherPlayer.setTint(0xff0000);
-    // }
+    if (playerInfo.team === 'blue') {
+        otherPlayer.setTint(0x0000ff);
+    } else {
+        otherPlayer.setTint(0xff0000);
+    }
     otherPlayer.playerId = playerInfo.playerId;
     self.otherPlayers.add(otherPlayer);
 }
 
 function update() {
+    this.cameras.main.setBackgroundColor('#ccccff');
     if (this.ship) {
         // if (this.cursors.left.isDown) {
         //     this.ship.setAngularVelocity(-150);
@@ -117,25 +125,25 @@ function update() {
         //     this.ship.setAcceleration(0);
         // }
 
-        // if (this.cursors.left.isDown) {
-        //     this.ship.setVelocity(-100, 0);
-        // } else if (this.cursors.right.isDown) {
-        //     this.ship.setVelocity(100, 0);
-        // } else if (this.cursors.up.isDown) {
-        //     this.ship.setVelocity(0, -100);
-        // } else if (this.cursors.down.isDown) {
-        //     this.ship.setVelocity(0, 100);
-        // }
-
         if (this.cursors.left.isDown) {
-            this.ship.x -= 10;
+            this.ship.setVelocity(-1000, 0);
         } else if (this.cursors.right.isDown) {
-            this.ship.x += 10;
+            this.ship.setVelocity(1000, 0);
         } else if (this.cursors.up.isDown) {
-            this.ship.y -= 10;
+            this.ship.setVelocity(0, -1000);
         } else if (this.cursors.down.isDown) {
-            this.ship.y += 10;
+            this.ship.setVelocity(0, 1000);
         }
+
+        // if (this.cursors.left.isDown) {
+        //     this.ship.x -= 10;
+        // } else if (this.cursors.right.isDown) {
+        //     this.ship.x += 10;
+        // } else if (this.cursors.up.isDown) {
+        //     this.ship.y -= 10;
+        // } else if (this.cursors.down.isDown) {
+        //     this.ship.y += 10;
+        // }
 
         // this.physics.world.wrap(this.ship, 5);
 
