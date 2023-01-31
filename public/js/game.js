@@ -24,7 +24,7 @@ function preload() {
 
     this.load.image('ship', 'assets/pink_snake_tongue_pixel.png');
     this.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
-    this.load.image('apple', 'assets/signpost32px.png');
+    this.load.image('apple', 'assets/apple.png');
 }
 
 function create() {
