@@ -3,7 +3,7 @@ const BLUE = 0x0000FF;
 const RED = 0xFF0000;
 const BG_COLOR_STR = '#005C29';
 
-var config = {
+let config = {
     type: Phaser.AUTO,
     parent: 'phaser-example',
     width: 1000,
@@ -22,7 +22,7 @@ var config = {
     }
 };
 
-var game = new Phaser.Game(config);
+let game = new Phaser.Game(config);
 
 function preload() {
     this.load.image('background', 'assets/grass.png');
@@ -80,7 +80,7 @@ function movePlayer(self, playerInfo) {
 
 function create() {
 
-    var self = this;
+    let self = this;
     this.socket = io();
 
     this.otherPlayers = this.physics.add.group();
@@ -161,9 +161,9 @@ function update() {
         }
 
         // emit player movement
-        var x = this.ship.x;
-        var y = this.ship.y;
-        var r = this.ship.rotation;
+        let x = this.ship.x;
+        let y = this.ship.y;
+        let r = this.ship.rotation;
         if (this.ship.oldPosition && (x !== this.ship.oldPosition.x || y !== this.ship.oldPosition.y || r !== this.ship.oldPosition.rotation)) {
             this.socket.emit('playerMovement', { x: this.ship.x, y: this.ship.y, rotation: this.ship.rotation });
         }

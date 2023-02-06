@@ -8,21 +8,21 @@ const TEAM_COLORS = ['blue', 'red'];
 const BLUE_INDEX = 0;
 const RED_INDEX = 1;
 
-var scores = {
+let scores = {
     blue: 0,
     red: 0
 };
 
-var express = require('express');
-var app = express();
-var server = require('http').Server(app);
-var io = require('socket.io') (server);
+let express = require('express');
+let app = express();
+let server = require('http').Server(app);
+let io = require('socket.io') (server);
 
 console.log(__dirname);
 
-var players = {};
+let players = {};
 
-var apple = {
+let apple = {
     x: getRandomX(),
     y: getRandomY()
 };
@@ -75,7 +75,7 @@ io.on('connection', function (socket) {
 
         const APPLE_SCORE = 10;
 
-        var team = players[socket.id].team;
+        let team = players[socket.id].team;
 
         if (team === TEAM_COLORS[BLUE_INDEX]) {
             scores.blue += APPLE_SCORE;
