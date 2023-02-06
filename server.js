@@ -1,16 +1,30 @@
-var express = require('express');
-var app = express();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
+const WIDTH = 700;
+const HEIGHT = 500;
+const BORDER = 50;
 
-var players = {};
-var apple = {
-    x: Math.floor(Math.random() * 700) + 50,
-    y: Math.floor(Math.random() * 500) + 50
-};
+const NUM_TEAMS = 2;
+const TEAM_COLORS = ['blue', 'red'];
+
+const BLUE_INDEX = 0;
+const RED_INDEX = 1;
+
 var scores = {
     blue: 0,
     red: 0
+};
+
+var express = require('express');
+var app = express();
+var server = require('http').Server(app);
+var io = require('socket.io') (server);
+
+console.log(__dirname);
+
+var players = {};
+
+var apple = {
+    x: getRandomX(),
+    y: getRandomY()
 };
 
 app.use(express.static(__dirname + '/public'));
@@ -21,14 +35,16 @@ app.get('/', function (req, res) {
 
 io.on('connection', function (socket) {
     console.log('a user connected: ', socket.id);
+
     // create a new player and add it to our players object
     players[socket.id] = {
         rotation: 0,
-        x: Math.floor(Math.random() * 700) + 50,
-        y: Math.floor(Math.random() * 500) + 50,
+        x: getRandomX(),
+        y: getRandomY(),
         playerId: socket.id,
-        team: (Math.floor(Math.random() * 2) == 0) ? 'red' : 'blue'
+        team: getRandomTeam()
     };
+
     // send the players object to the new player
     socket.emit('currentPlayers', players);
     // send the apple to the new player
@@ -40,7 +56,7 @@ io.on('connection', function (socket) {
 
     // when a player disconnects, remove them from our players object
     socket.on('disconnect', function () {
-        console.log('user disconnected: ', socket.id);
+        console.log('User disconnected: ', socket.id);
         delete players[socket.id];
         // emit a message to all players to remove this player
         io.emit('disconnected', socket.id);
@@ -56,13 +72,21 @@ io.on('connection', function (socket) {
     });
 
     socket.on('appleCollected', function () {
-        if (players[socket.id].team === 'red') {
-            scores.red += 10;
+
+        const APPLE_SCORE = 10;
+
+        var team = players[socket.id].team;
+
+        if (team === TEAM_COLORS[BLUE_INDEX]) {
+            scores.blue += APPLE_SCORE;
+        } else if (team === TEAM_COLORS[RED_INDEX]) {
+            scores.red += APPLE_SCORE;
         } else {
-            scores.blue += 10;
+            console.log("TEAM NOT RECOGNIZED!");
         }
-        apple.x = Math.floor(Math.random() * 700) + 50;
-        apple.y = Math.floor(Math.random() * 500) + 50;
+
+        setAppleCoordinates()
+
         io.emit('appleLocation', apple);
         io.emit('scoreUpdate', scores);
     });
@@ -71,3 +95,28 @@ io.on('connection', function (socket) {
 server.listen(8081, function () {
     console.log(`Listening on ${server.address().port}`);
 });
+
+function setAppleCoordinates() {
+    apple.x = getRandomX();
+    apple.y = getRandomY();
+}
+
+function getRandomTeam() {
+    return TEAM_COLORS[getRandomNum(NUM_TEAMS)];
+}
+
+function getRandomX() {
+    return getRandomCoordinate(WIDTH);
+}
+
+function getRandomY() {
+    return getRandomCoordinate(HEIGHT);
+}
+
+function getRandomCoordinate(scale) {
+    return getRandomNum(scale) + BORDER;
+}
+
+function getRandomNum(scale) {
+    return Math.floor(Math.random() * scale);
+}
