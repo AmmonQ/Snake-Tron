@@ -42,7 +42,8 @@ io.on('connection', function (socket) {
         x: getRandomX(),
         y: getRandomY(),
         playerId: socket.id,
-        team: getRandomTeam()
+        team: getRandomTeam(),
+        direction: 'right'
     };
 
     // send the players object to the new player

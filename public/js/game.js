@@ -8,10 +8,11 @@ let config = {
     parent: 'phaser-example',
     width: 1000,
     height: 800,
+    backgroundColor: BG_COLOR_STR,
     physics: {
         default: 'arcade',
         arcade: {
-            debug: false,
+            debug: true,
             gravity: { y: 0 }
         }
     },
@@ -144,20 +145,34 @@ function addOtherPlayers(self, playerInfo) {
     self.otherPlayers.add(otherPlayer);
 }
 
+// this handles the movement of the snake
+// so the snake is always moving and only changes
+// direction
 function update() {
-
-    this.cameras.main.setBackgroundColor(BG_COLOR_STR);
-
     if (this.ship) {
-
         if (this.cursors.left.isDown) {
-            this.ship.setVelocity(-1000, 0);
+            this.ship.direction = 'left';
         } else if (this.cursors.right.isDown) {
-            this.ship.setVelocity(1000, 0);
+            this.ship.direction = 'right';
         } else if (this.cursors.up.isDown) {
-            this.ship.setVelocity(0, -1000);
+            this.ship.direction = 'up';
         } else if (this.cursors.down.isDown) {
-            this.ship.setVelocity(0, 1000);
+            this.ship.direction = 'down';
+        }
+
+        switch (this.ship.direction) {
+            case 'left':
+                this.ship.setPosition(this.ship.x - 5, this.ship.y);
+                break;
+            case 'right':
+                this.ship.setPosition(this.ship.x + 5, this.ship.y);
+                break;
+            case 'up':
+                this.ship.setPosition(this.ship.x, this.ship.y - 5);
+                break;
+            case 'down':
+                this.ship.setPosition(this.ship.x, this.ship.y + 5);
+                break;
         }
 
         // emit player movement
@@ -165,7 +180,7 @@ function update() {
         let y = this.ship.y;
         let r = this.ship.rotation;
         if (this.ship.oldPosition && (x !== this.ship.oldPosition.x || y !== this.ship.oldPosition.y || r !== this.ship.oldPosition.rotation)) {
-            this.socket.emit('playerMovement', { x: this.ship.x, y: this.ship.y, rotation: this.ship.rotation });
+            this.socket.emit('  ', { x: this.ship.x, y: this.ship.y, rotation: this.ship.rotation });
         }
 
         // save old position data
