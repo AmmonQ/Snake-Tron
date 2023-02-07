@@ -150,13 +150,14 @@ function addOtherPlayers(self, playerInfo) {
 // direction
 function update() {
     if (this.ship) {
-        if (this.cursors.left.isDown) {
+
+        if (this.cursors.left.isDown && this.ship.direction !== 'right') {
             this.ship.direction = 'left';
-        } else if (this.cursors.right.isDown) {
+        } else if (this.cursors.right.isDown && this.ship.direction !== 'left') {
             this.ship.direction = 'right';
-        } else if (this.cursors.up.isDown) {
+        } else if (this.cursors.up.isDown && this.ship.direction !== 'down') {
             this.ship.direction = 'up';
-        } else if (this.cursors.down.isDown) {
+        } else if (this.cursors.down.isDown && this.ship.direction !== 'up') {
             this.ship.direction = 'down';
         }
 
