@@ -1,4 +1,3 @@
-
 const BLUE = 0x0000FF;
 const RED = 0xFF0000;
 const BG_COLOR_STR = '#005C29';
@@ -113,6 +112,7 @@ function create() {
         if (self.apple) {
             self.apple.destroy();
         }
+
         self.apple = self.physics.add.image(appleLocation.x, appleLocation.y, 'apple');
 
         self.physics.add.overlap(self.ship, self.apple, function () {
@@ -146,6 +146,7 @@ function addOtherPlayers(self, playerInfo) {
 }
 
 function setShipDirection(self) {
+
     if (self.cursors.left.isDown && self.ship.direction !== 'right') {
         self.ship.direction = 'left';
     } else if (self.cursors.right.isDown && self.ship.direction !== 'left') {
@@ -158,6 +159,7 @@ function setShipDirection(self) {
 }
 
 function setShipPosition(self) {
+
     switch (self.ship.direction) {
         case 'left':
             self.ship.setPosition(self.ship.x - 5, self.ship.y);
@@ -178,8 +180,9 @@ function setShipPosition(self) {
 // so the snake is always moving and only changes
 // direction
 function update() {
-    if (this.ship) {
 
+    if (this.ship) {
+        // set direction and position
         setShipDirection(this);
         setShipPosition(this);
 
