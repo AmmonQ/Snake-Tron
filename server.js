@@ -13,9 +13,6 @@ let scores = {
     red: 0
 };
 
-let helloWorld = require("./helloWorld");
-console.log(helloWorld.msg);
-
 let express = require('express');
 let app = express();
 let server = require('http').Server(app);
