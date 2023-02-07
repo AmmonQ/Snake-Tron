@@ -145,35 +145,43 @@ function addOtherPlayers(self, playerInfo) {
     self.otherPlayers.add(otherPlayer);
 }
 
+function setShipDirection(self) {
+    if (self.cursors.left.isDown && self.ship.direction !== 'right') {
+        self.ship.direction = 'left';
+    } else if (self.cursors.right.isDown && self.ship.direction !== 'left') {
+        self.ship.direction = 'right';
+    } else if (self.cursors.up.isDown && self.ship.direction !== 'down') {
+        self.ship.direction = 'up';
+    } else if (self.cursors.down.isDown && self.ship.direction !== 'up') {
+        self.ship.direction = 'down';
+    }
+}
+
+function setShipPosition(self) {
+    switch (self.ship.direction) {
+        case 'left':
+            self.ship.setPosition(self.ship.x - 5, self.ship.y);
+            break;
+        case 'right':
+            self.ship.setPosition(self.ship.x + 5, self.ship.y);
+            break;
+        case 'up':
+            self.ship.setPosition(self.ship.x, self.ship.y - 5);
+            break;
+        case 'down':
+            self.ship.setPosition(self.ship.x, self.ship.y + 5);
+            break;
+    }
+}
+
 // this handles the movement of the snake
 // so the snake is always moving and only changes
 // direction
 function update() {
     if (this.ship) {
-        if (this.cursors.left.isDown) {
-            this.ship.direction = 'left';
-        } else if (this.cursors.right.isDown) {
-            this.ship.direction = 'right';
-        } else if (this.cursors.up.isDown) {
-            this.ship.direction = 'up';
-        } else if (this.cursors.down.isDown) {
-            this.ship.direction = 'down';
-        }
 
-        switch (this.ship.direction) {
-            case 'left':
-                this.ship.setPosition(this.ship.x - 5, this.ship.y);
-                break;
-            case 'right':
-                this.ship.setPosition(this.ship.x + 5, this.ship.y);
-                break;
-            case 'up':
-                this.ship.setPosition(this.ship.x, this.ship.y - 5);
-                break;
-            case 'down':
-                this.ship.setPosition(this.ship.x, this.ship.y + 5);
-                break;
-        }
+        setShipDirection(this);
+        setShipPosition(this);
 
         // emit player movement
         let x = this.ship.x;
