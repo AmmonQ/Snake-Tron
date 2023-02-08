@@ -1,6 +1,6 @@
 const BLUE = 0x0000FF;
 const RED = 0xFF0000;
-const BG_COLOR_STR = '#009C29';
+const BG_COLOR_STR = '#00AC29';
 
 const ROW_COL_SIZE = 32;
 const NUM_ROWS = 20;
@@ -37,25 +37,31 @@ let config = {
 
 let game = new Phaser.Game(config);
 
+
 // draw checker board for game
 function drawBoard(graphics) {
 
+    const BG_COLOR = 0x009C29;
     const FG_COLOR = 0x008C29;
     const ALPHA = 1.0;
-    
+
     graphics.fillStyle(FG_COLOR, ALPHA);
-    
+
     let previous = false;
 
-    for (let col = 0; col < HEIGHT; col += ROW_COL_SIZE) {
-        for (let row = 0; row < WIDTH; row += ROW_COL_SIZE) {
-            if (!previous) {
-                graphics.fillRect(row, col, ROW_COL_SIZE, ROW_COL_SIZE);
-            }
+    for (let i = 0; i < 2; i++) {
+        for (let col = ROW_COL_SIZE; col < HEIGHT - ROW_COL_SIZE; col += ROW_COL_SIZE) {
+            for (let row = ROW_COL_SIZE; row < WIDTH - ROW_COL_SIZE; row += ROW_COL_SIZE) {
+                if (!previous) {
+                    graphics.fillRect(row, col, ROW_COL_SIZE, ROW_COL_SIZE);
+                }
 
+                previous = !previous;
+            }
             previous = !previous;
         }
         previous = !previous;
+        graphics.fillStyle(BG_COLOR, ALPHA);
     }
 }
 

@@ -1,10 +1,11 @@
+let express = require('express');
+let app = express();
+let server = require('http').Server(app);
+let io = require('socket.io') (server);
+
 let coordinateJS = require('./public/js/model/coordinate.js');
 let appleJS = require('./public/js/model/apple.js');
 let playerJS = require('./public/js/model/player.js');
-
-const WIDTH = 700;
-const HEIGHT = 500;
-const BORDER = 50;
 
 const NUM_TEAMS = 2;
 const TEAM_COLORS = ['blue', 'red'];
@@ -16,13 +17,6 @@ let scores = {
     blue: 0,
     red: 0
 };
-
-let express = require('express');
-let app = express();
-let server = require('http').Server(app);
-let io = require('socket.io') (server);
-
-console.log(__dirname);
 
 let players = {};
 
