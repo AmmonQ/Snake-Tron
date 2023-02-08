@@ -1,12 +1,13 @@
 const BLUE = 0x0000FF;
 const RED = 0xFF0000;
-const BG_COLOR_STR = '#00AC29';
+const BG_COLOR_STR = '#009C29';
+const BORDER_SIZE = 32;
 
 const ROW_COL_SIZE = 32;
 const NUM_ROWS = 20;
 const NUM_COLS = 30;
-const WIDTH = ROW_COL_SIZE * NUM_COLS;
-const HEIGHT = ROW_COL_SIZE * NUM_ROWS;
+const WIDTH = ROW_COL_SIZE * NUM_COLS + BORDER_SIZE * 2;
+const HEIGHT = ROW_COL_SIZE * NUM_ROWS + BORDER_SIZE * 2;
 
 const Directions = {
 	LEFT: 'left',
@@ -37,11 +38,21 @@ let config = {
 
 let game = new Phaser.Game(config);
 
+function drawBorder(graphics, alpha) {
 
-// draw checker board for game
+    const BORDER_COLOR = 0x004C29;
+
+    graphics.fillStyle(BORDER_COLOR, alpha);
+
+    graphics.fillRect(0, 0, WIDTH, BORDER_SIZE);
+    graphics.fillRect(0, 0, BORDER_SIZE, HEIGHT);
+    graphics.fillRect(WIDTH - BORDER_SIZE, 0, BORDER_SIZE, HEIGHT);
+    graphics.fillRect(0, HEIGHT - BORDER_SIZE, WIDTH, BORDER_SIZE);
+}
+
+// draw checkerboard for game
 function drawBoard(graphics) {
 
-    const BG_COLOR = 0x009C29;
     const FG_COLOR = 0x008C29;
     const ALPHA = 1.0;
 
@@ -49,20 +60,18 @@ function drawBoard(graphics) {
 
     let previous = false;
 
-    for (let i = 0; i < 2; i++) {
-        for (let col = ROW_COL_SIZE; col < HEIGHT - ROW_COL_SIZE; col += ROW_COL_SIZE) {
-            for (let row = ROW_COL_SIZE; row < WIDTH - ROW_COL_SIZE; row += ROW_COL_SIZE) {
-                if (!previous) {
-                    graphics.fillRect(row, col, ROW_COL_SIZE, ROW_COL_SIZE);
-                }
-
-                previous = !previous;
+    for (let col = BORDER_SIZE; col < HEIGHT - BORDER_SIZE; col += ROW_COL_SIZE) {
+        for (let row = BORDER_SIZE; row < WIDTH - BORDER_SIZE; row += ROW_COL_SIZE) {
+            if (!previous) {
+                graphics.fillRect(row, col, ROW_COL_SIZE, ROW_COL_SIZE);
             }
+
             previous = !previous;
         }
         previous = !previous;
-        graphics.fillStyle(BG_COLOR, ALPHA);
     }
+
+    drawBorder(graphics, ALPHA);
 }
 
 function preload() {

@@ -13,6 +13,12 @@ const TEAM_COLORS = ['blue', 'red'];
 const BLUE_INDEX = 0;
 const RED_INDEX = 1;
 
+const BORDER_SIZE = 32;
+
+const ROW_COL_SIZE = 32;
+const NUM_ROWS = 20;
+const NUM_COLS = 30;
+
 let scores = {
     blue: 0,
     red: 0
@@ -96,11 +102,11 @@ function getRandomTeam() {
 }
 
 function getRandomX() {
-    return (getRandomCoordinate(30) * 32);
+    return (getRandomCoordinate(NUM_COLS) * ROW_COL_SIZE) + BORDER_SIZE;
 }
 
 function getRandomY() {
-    return (getRandomCoordinate(20) * 32);
+    return (getRandomCoordinate(NUM_ROWS) * ROW_COL_SIZE) + BORDER_SIZE;
 }
 
 function getRandomCoordinate(scale) {
