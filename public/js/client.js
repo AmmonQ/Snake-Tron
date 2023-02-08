@@ -26,7 +26,7 @@ let game = new Phaser.Game(config);
 
 function preload() {
     this.load.image('background', 'assets/grass.png');
-    this.load.image('ship', 'assets/pink_snake_tongue_pixel.png');
+    this.load.image('player', 'assets/pink_snake_tongue_pixel.png');
     this.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
     this.load.image('apple', 'assets/apple.png');
 }
@@ -115,7 +115,7 @@ function create() {
 
         self.apple = self.physics.add.image(appleLocation.x, appleLocation.y, 'apple');
 
-        self.physics.add.overlap(self.ship, self.apple, function () {
+        self.physics.add.overlap(self.player, self.apple, function () {
             this.socket.emit('appleCollected');
         }, null, self);
     });
@@ -127,12 +127,12 @@ function setPlayerColor(player, playerInfo) {
 
 function addPlayer(self, playerInfo) {
 
-    self.ship = self.physics.add.image(playerInfo.position.x, playerInfo.position.y, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
-    setPlayerColor(self.ship, playerInfo);
+    self.player = self.physics.add.image(playerInfo.position.x, playerInfo.position.y, 'player').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+    setPlayerColor(self.player, playerInfo);
 
-    self.ship.setDrag(100);
-    self.ship.setAngularDrag(100);
-    self.ship.setMaxVelocity(200);
+    self.player.setDrag(100);
+    self.player.setAngularDrag(100);
+    self.player.setMaxVelocity(200);
 }
 
 function addOtherPlayers(self, playerInfo) {
@@ -144,33 +144,33 @@ function addOtherPlayers(self, playerInfo) {
     self.otherPlayers.add(otherPlayer);
 }
 
-function setShipDirection(self) {
+function setPlayerDirection(self) {
 
-    if (self.cursors.left.isDown && self.ship.direction !== 'right') {
-        self.ship.direction = 'left';
-    } else if (self.cursors.right.isDown && self.ship.direction !== 'left') {
-        self.ship.direction = 'right';
-    } else if (self.cursors.up.isDown && self.ship.direction !== 'down') {
-        self.ship.direction = 'up';
-    } else if (self.cursors.down.isDown && self.ship.direction !== 'up') {
-        self.ship.direction = 'down';
+    if (self.cursors.left.isDown && self.player.direction !== 'right') {
+        self.player.direction = 'left';
+    } else if (self.cursors.right.isDown && self.player.direction !== 'left') {
+        self.player.direction = 'right';
+    } else if (self.cursors.up.isDown && self.player.direction !== 'down') {
+        self.player.direction = 'up';
+    } else if (self.cursors.down.isDown && self.player.direction !== 'up') {
+        self.player.direction = 'down';
     }
 }
 
-function setShipPosition(self) {
+function setPlayerPosition(self) {
 
-    switch (self.ship.direction) {
+    switch (self.player.direction) {
         case 'left':
-            self.ship.setPosition(self.ship.x - 5, self.ship.y);
+            self.player.setPosition(self.player.x - 5, self.player.y);
             break;
         case 'right':
-            self.ship.setPosition(self.ship.x + 5, self.ship.y);
+            self.player.setPosition(self.player.x + 5, self.player.y);
             break;
         case 'up':
-            self.ship.setPosition(self.ship.x, self.ship.y - 5);
+            self.player.setPosition(self.player.x, self.player.y - 5);
             break;
         case 'down':
-            self.ship.setPosition(self.ship.x, self.ship.y + 5);
+            self.player.setPosition(self.player.x, self.player.y + 5);
             break;
     }
 }
@@ -180,22 +180,22 @@ function setShipPosition(self) {
 // direction
 function update() {
 
-    if (this.ship) {
+    if (this.player) {
         // set direction and position
-        setShipDirection(this);
-        setShipPosition(this);
+        setPlayerDirection(this);
+        setPlayerPosition(this);
 
         // emit player movement
-        let x = this.ship.x;
-        let y = this.ship.y;
-        if (this.ship.oldPosition && (x !== this.ship.oldPosition.x || y !== this.ship.oldPosition.y)) {
-            this.socket.emit('  ', { x: this.ship.x, y: this.ship.y });
+        let x = this.player.x;
+        let y = this.player.y;
+        if (this.player.oldPosition && (x !== this.player.oldPosition.x || y !== this.player.oldPosition.y)) {
+            this.socket.emit('  ', { x: this.player.x, y: this.player.y });
         }
 
         // save old position data
-        this.ship.oldPosition = {
-            x: this.ship.x,
-            y: this.ship.y,
+        this.player.oldPosition = {
+            x: this.player.x,
+            y: this.player.y,
         };
     }
 }
