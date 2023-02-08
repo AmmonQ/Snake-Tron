@@ -5,6 +5,7 @@ module.exports.Player = class Player {
         this.id = id;
         this.team = team;
         this.direction = 'right';
+        this.nextDirection = 'right';
     }
 
     toString() {

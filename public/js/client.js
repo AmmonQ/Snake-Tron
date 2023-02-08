@@ -1,12 +1,25 @@
 const BLUE = 0x0000FF;
 const RED = 0xFF0000;
-const BG_COLOR_STR = '#005C29';
+const BG_COLOR_STR = '#009C29';
+
+const ROW_COL_SIZE = 32;
+const NUM_ROWS = 20;
+const NUM_COLS = 30;
+const WIDTH = ROW_COL_SIZE * NUM_COLS;
+const HEIGHT = ROW_COL_SIZE * NUM_ROWS;
+
+const Directions = {
+	LEFT: 'left',
+	RIGHT: 'right',
+	UP: 'up',
+	DOWN: 'down'
+};
 
 let config = {
     type: Phaser.AUTO,
     parent: 'phaser-example',
-    width: 1000,
-    height: 800,
+    width: WIDTH,
+    height: HEIGHT,
     backgroundColor: BG_COLOR_STR,
     physics: {
         default: 'arcade',
@@ -24,11 +37,36 @@ let config = {
 
 let game = new Phaser.Game(config);
 
+// draw checker board for game
+function drawBoard(graphics) {
+
+    const FG_COLOR = 0x008C29;
+    const ALPHA = 1.0;
+    
+    graphics.fillStyle(FG_COLOR, ALPHA);
+    
+    let previous = false;
+
+    for (let col = 0; col < HEIGHT; col += ROW_COL_SIZE) {
+        for (let row = 0; row < WIDTH; row += ROW_COL_SIZE) {
+            if (!previous) {
+                graphics.fillRect(row, col, ROW_COL_SIZE, ROW_COL_SIZE);
+            }
+
+            previous = !previous;
+        }
+        previous = !previous;
+    }
+}
+
 function preload() {
+
     this.load.image('background', 'assets/grass.png');
     this.load.image('player', 'assets/pink_snake_tongue_pixel.png');
     this.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
     this.load.image('apple', 'assets/apple.png');
+
+    drawBoard(this.add.graphics());
 }
 
 function initScoreText(self) {
@@ -130,9 +168,9 @@ function addPlayer(self, playerInfo) {
     self.player = self.physics.add.image(playerInfo.position.x, playerInfo.position.y, 'player').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
     setPlayerColor(self.player, playerInfo);
 
-    self.player.setDrag(100);
-    self.player.setAngularDrag(100);
-    self.player.setMaxVelocity(200);
+    // self.player.setDrag(100);
+    // self.player.setAngularDrag(100);
+    // self.player.setMaxVelocity(200);
 }
 
 function addOtherPlayers(self, playerInfo) {
@@ -144,33 +182,44 @@ function addOtherPlayers(self, playerInfo) {
     self.otherPlayers.add(otherPlayer);
 }
 
+function setPlayerNextDirection(self) {
+
+    if (self.cursors.left.isDown && self.player.direction !== Directions.RIGHT) {
+        self.player.nextDirection = Directions.LEFT;
+    } else if (self.cursors.right.isDown && self.player.direction !== Directions.LEFT) {
+        self.player.nextDirection = Directions.RIGHT;
+    } else if (self.cursors.up.isDown && self.player.direction !== Directions.DOWN) {
+        self.player.nextDirection = Directions.UP;
+    } else if (self.cursors.down.isDown && self.player.direction !== Directions.UP) {
+        self.player.nextDirection = Directions.DOWN;
+    }
+}
+
 function setPlayerDirection(self) {
 
-    if (self.cursors.left.isDown && self.player.direction !== 'right') {
-        self.player.direction = 'left';
-    } else if (self.cursors.right.isDown && self.player.direction !== 'left') {
-        self.player.direction = 'right';
-    } else if (self.cursors.up.isDown && self.player.direction !== 'down') {
-        self.player.direction = 'up';
-    } else if (self.cursors.down.isDown && self.player.direction !== 'up') {
-        self.player.direction = 'down';
+    if ((((self.player.x - 16) % ROW_COL_SIZE) != 0) || (((self.player.y - 16) % ROW_COL_SIZE) != 0)) {
+        return;
     }
+
+    self.player.direction = self.player.nextDirection;
 }
 
 function setPlayerPosition(self) {
 
+    const POS_DELTA = 4;
+
     switch (self.player.direction) {
-        case 'left':
-            self.player.setPosition(self.player.x - 5, self.player.y);
+        case Directions.LEFT:
+            self.player.setPosition(self.player.x - POS_DELTA, self.player.y);
             break;
-        case 'right':
-            self.player.setPosition(self.player.x + 5, self.player.y);
+        case Directions.RIGHT:
+            self.player.setPosition(self.player.x + POS_DELTA, self.player.y);
             break;
-        case 'up':
-            self.player.setPosition(self.player.x, self.player.y - 5);
+        case Directions.UP:
+            self.player.setPosition(self.player.x, self.player.y - POS_DELTA);
             break;
-        case 'down':
-            self.player.setPosition(self.player.x, self.player.y + 5);
+        case Directions.DOWN:
+            self.player.setPosition(self.player.x, self.player.y + POS_DELTA);
             break;
     }
 }
@@ -182,6 +231,7 @@ function update() {
 
     if (this.player) {
         // set direction and position
+        setPlayerNextDirection(this);
         setPlayerDirection(this);
         setPlayerPosition(this);
 

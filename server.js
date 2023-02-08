@@ -102,15 +102,15 @@ function getRandomTeam() {
 }
 
 function getRandomX() {
-    return getRandomCoordinate(WIDTH);
+    return (getRandomCoordinate(29) * 32) + 16;
 }
 
 function getRandomY() {
-    return getRandomCoordinate(HEIGHT);
+    return (getRandomCoordinate(19) * 32) + 16;
 }
 
 function getRandomCoordinate(scale) {
-    return getRandomNum(scale) + BORDER;
+    return getRandomNum(scale);
 }
 
 function getRandomNum(scale) {
