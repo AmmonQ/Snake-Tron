@@ -195,9 +195,18 @@ function setPlayerNextDirection(self) {
     }
 }
 
+function isCoordinateAligned(coordinate) {
+    const HALF_ROW_COL_SIZE = ROW_COL_SIZE / 2;
+    return (((coordinate - HALF_ROW_COL_SIZE) % ROW_COL_SIZE) == 0);
+}
+
+function areCoordinatesAligned(player) {
+    return (isCoordinateAligned(player.x) && isCoordinateAligned(player.y));
+}
+
 function setPlayerDirection(self) {
 
-    if ((((self.player.x - 16) % ROW_COL_SIZE) != 0) || (((self.player.y - 16) % ROW_COL_SIZE) != 0)) {
+    if (!areCoordinatesAligned(self.player)) {
         return;
     }
 
