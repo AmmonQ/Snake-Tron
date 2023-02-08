@@ -1,3 +1,7 @@
+let coordinateJS = require('./public/js/model/coordinate.js');
+let appleJS = require('./public/js/model/apple.js');
+let playerJS = require('./public/js/model/player.js');
+
 const WIDTH = 700;
 const HEIGHT = 500;
 const BORDER = 50;
@@ -22,34 +26,28 @@ console.log(__dirname);
 
 let players = {};
 
-let apple = {
-    x: getRandomX(),
-    y: getRandomY()
-};
+let apple = new appleJS.Apple(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
 
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/public/html/index.html');
 });
 
 io.on('connection', function (socket) {
     console.log('a user connected: ', socket.id);
 
     // create a new player and add it to our players object
-    players[socket.id] = {
-        rotation: 0,
-        x: getRandomX(),
-        y: getRandomY(),
-        playerId: socket.id,
-        team: getRandomTeam(),
-        direction: 'right'
-    };
+    players[socket.id] = new playerJS.Player(
+        new coordinateJS.Coordinate(getRandomX(), getRandomY()), 
+        socket.id, 
+        getRandomTeam()
+    );
 
     // send the players object to the new player
     socket.emit('currentPlayers', players);
     // send the apple to the new player
-    socket.emit('appleLocation', apple);
+    socket.emit('appleLocation', apple.getPosition());
     // send the current scores
     socket.emit('scoreUpdate', scores);
     // update all other players of the new player
@@ -65,9 +63,7 @@ io.on('connection', function (socket) {
 
     // when a player moves, update the player data
     socket.on('playerMovement', function (movementData) {
-        players[socket.id].x = movementData.x;
-        players[socket.id].y = movementData.y;
-        players[socket.id].rotation = movementData.rotation;
+        players[socket.id].position = new coordinateJS.Coordinate(movementData.x, movementData.y);
         // emit a message to all players about the player that moved
         socket.broadcast.emit('playerMoved', players[socket.id]);
     });
@@ -88,7 +84,7 @@ io.on('connection', function (socket) {
 
         setAppleCoordinates()
 
-        io.emit('appleLocation', apple);
+        io.emit('appleLocation', apple.getPosition());
         io.emit('scoreUpdate', scores);
     });
 });
@@ -98,8 +94,7 @@ server.listen(8081, function () {
 });
 
 function setAppleCoordinates() {
-    apple.x = getRandomX();
-    apple.y = getRandomY();
+    apple.setPosition(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
 }
 
 function getRandomTeam() {
