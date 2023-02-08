@@ -84,7 +84,7 @@ function initScoreText(self) {
 
 function addOtherPlayers(self, playerInfo) {
 
-    const otherPlayer = self.add.sprite(playerInfo.position.x, playerInfo.position.y, 'otherPlayer').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+    const otherPlayer = self.add.sprite(playerInfo.position.x, playerInfo.position.y, 'otherPlayer').setOrigin(0.0, 0.0);
     setPlayerColor(otherPlayer, playerInfo);
 
     otherPlayer.id = playerInfo.id;
@@ -134,7 +134,11 @@ function isSamePosition(player, apple) {
     let appleRow = apple.y / ROW_COL_SIZE;
     let appleCol = apple.x / ROW_COL_SIZE;
 
-    return ((playerRow == appleRow) && (playerCol == appleCol));
+    return ((playerRow === appleRow) && (playerCol === appleCol));
+}
+
+function addImage(self, position, image) {
+    return self.physics.add.image(position.x, position.y, image).setOrigin(0.0, 0.0);
 }
 
 function updateApple(self, appleLocation) {
@@ -143,7 +147,7 @@ function updateApple(self, appleLocation) {
         self.apple.destroy();
     }
 
-    self.apple = self.physics.add.image(appleLocation.x, appleLocation.y, 'apple');
+    self.apple = addImage(self, appleLocation, 'apple');
 
     self.physics.add.overlap(self.player, self.apple, function () {
 
@@ -196,7 +200,7 @@ function setPlayerColor(player, playerInfo) {
 
 function addPlayer(self, playerInfo) {
 
-    self.player = self.physics.add.image(playerInfo.position.x, playerInfo.position.y, 'player').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+    self.player = addImage(self, playerInfo.position, 'player');
     setPlayerColor(self.player, playerInfo);
 }
 
@@ -214,8 +218,7 @@ function setPlayerNextDirection(self) {
 }
 
 function isCoordinateAligned(coordinate) {
-    const HALF_ROW_COL_SIZE = ROW_COL_SIZE / 2;
-    return (((coordinate - HALF_ROW_COL_SIZE) % ROW_COL_SIZE) == 0);
+    return ((coordinate % ROW_COL_SIZE) === 0);
 }
 
 function areCoordinatesAligned(player) {
