@@ -82,6 +82,15 @@ function initScoreText(self) {
     self.redScoreText = self.add.text(RED_X, SCORE_Y, '', { fontSize: FONT_SIZE, fill: RED_STR });
 }
 
+function addOtherPlayers(self, playerInfo) {
+
+    const otherPlayer = self.add.sprite(playerInfo.position.x, playerInfo.position.y, 'otherPlayer').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+    setPlayerColor(otherPlayer, playerInfo);
+
+    otherPlayer.id = playerInfo.id;
+    self.otherPlayers.add(otherPlayer);
+}
+
 function addPlayers(self, players) {
 
     Object.keys(players).forEach(function (id) {
@@ -92,6 +101,7 @@ function addPlayers(self, players) {
         }
     });
 }
+
 function disconnect(self, playerId) {
 
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
@@ -99,11 +109,6 @@ function disconnect(self, playerId) {
             otherPlayer.destroy();
         }
     });
-}
-function updateScores(self, scores) {
-
-    self.blueScoreText.setText('Blue: ' + scores.blue);
-    self.redScoreText.setText('Red: ' + scores.red);
 }
 
 function movePlayer(self, playerInfo) {
@@ -113,6 +118,41 @@ function movePlayer(self, playerInfo) {
             otherPlayer.setPosition(playerInfo.position.x, playerInfo.position.y);
         }
     });
+}
+
+function updateScores(self, scores) {
+
+    self.blueScoreText.setText('Blue: ' + scores.blue);
+    self.redScoreText.setText('Red: ' + scores.red);
+}
+
+function isSamePosition(player, apple) {
+
+    let playerRow = player.y / ROW_COL_SIZE;
+    let playerCol = player.x / ROW_COL_SIZE;
+
+    let appleRow = apple.y / ROW_COL_SIZE;
+    let appleCol = apple.x / ROW_COL_SIZE;
+
+    return ((playerRow == appleRow) && (playerCol == appleCol));
+}
+
+function updateApple(self, appleLocation) {
+
+    if (self.apple) {
+        self.apple.destroy();
+    }
+
+    self.apple = self.physics.add.image(appleLocation.x, appleLocation.y, 'apple');
+
+    self.physics.add.overlap(self.player, self.apple, function () {
+
+        if (!isSamePosition(self.player, self.apple)) {
+            return;
+        }
+
+        this.socket.emit('appleCollected');
+    }, null, self);
 }
 
 function create() {
@@ -146,16 +186,7 @@ function create() {
     });
 
     this.socket.on('appleLocation', function (appleLocation) {
-
-        if (self.apple) {
-            self.apple.destroy();
-        }
-
-        self.apple = self.physics.add.image(appleLocation.x, appleLocation.y, 'apple');
-
-        self.physics.add.overlap(self.player, self.apple, function () {
-            this.socket.emit('appleCollected');
-        }, null, self);
+        updateApple(self, appleLocation);
     });
 }
 
@@ -167,15 +198,6 @@ function addPlayer(self, playerInfo) {
 
     self.player = self.physics.add.image(playerInfo.position.x, playerInfo.position.y, 'player').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
     setPlayerColor(self.player, playerInfo);
-}
-
-function addOtherPlayers(self, playerInfo) {
-
-    const otherPlayer = self.add.sprite(playerInfo.position.x, playerInfo.position.y, 'otherPlayer').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
-    setPlayerColor(otherPlayer, playerInfo);
-
-    otherPlayer.id = playerInfo.id;
-    self.otherPlayers.add(otherPlayer);
 }
 
 function setPlayerNextDirection(self) {
