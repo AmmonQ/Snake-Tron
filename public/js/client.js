@@ -47,7 +47,7 @@ function initScoreText(self) {
 function addPlayers(self, players) {
 
     Object.keys(players).forEach(function (id) {
-        if (players[id].playerId === self.socket.id) {
+        if (players[id].id === self.socket.id) {
             addPlayer(self, players[id]);
         } else {
             addOtherPlayers(self, players[id]);
@@ -57,7 +57,7 @@ function addPlayers(self, players) {
 function disconnect(self, playerId) {
 
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
-        if (playerId === otherPlayer.playerId) {
+        if (playerId === otherPlayer.id) {
             otherPlayer.destroy();
         }
     });
@@ -71,9 +71,9 @@ function updateScores(self, scores) {
 function movePlayer(self, playerInfo) {
 
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
-        if (playerInfo.playerId === otherPlayer.playerId) {
+        if (playerInfo.id === otherPlayer.id) {
             otherPlayer.setRotation(playerInfo.rotation);
-            otherPlayer.setPosition(playerInfo.x, playerInfo.y);
+            otherPlayer.setPosition(playerInfo.position.x, playerInfo.position.y);
         }
     });
 }
@@ -109,6 +109,7 @@ function create() {
     });
 
     this.socket.on('appleLocation', function (appleLocation) {
+
         if (self.apple) {
             self.apple.destroy();
         }
@@ -127,21 +128,20 @@ function setPlayerColor(player, playerInfo) {
 
 function addPlayer(self, playerInfo) {
 
-    self.ship = self.physics.add.image(playerInfo.x, playerInfo.y, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+    self.ship = self.physics.add.image(playerInfo.position.x, playerInfo.position.y, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
     setPlayerColor(self.ship, playerInfo);
 
     self.ship.setDrag(100);
     self.ship.setAngularDrag(100);
     self.ship.setMaxVelocity(200);
-
 }
 
 function addOtherPlayers(self, playerInfo) {
 
-    const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'otherPlayer').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+    const otherPlayer = self.add.sprite(playerInfo.position.x, playerInfo.position.y, 'otherPlayer').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
     setPlayerColor(otherPlayer, playerInfo);
 
-    otherPlayer.playerId = playerInfo.playerId;
+    otherPlayer.id = playerInfo.id;
     self.otherPlayers.add(otherPlayer);
 }
 

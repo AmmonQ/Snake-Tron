@@ -1,5 +1,6 @@
 let coordinateJS = require('./public/js/model/coordinate.js');
 let appleJS = require('./public/js/model/apple.js');
+let playerJS = require('./public/js/model/player.js');
 
 const WIDTH = 700;
 const HEIGHT = 500;
@@ -37,14 +38,11 @@ io.on('connection', function (socket) {
     console.log('a user connected: ', socket.id);
 
     // create a new player and add it to our players object
-    players[socket.id] = {
-        rotation: 0,
-        x: getRandomX(),
-        y: getRandomY(),
-        playerId: socket.id,
-        team: getRandomTeam(),
-        direction: 'right'
-    };
+    players[socket.id] = new playerJS.Player(
+        new coordinateJS.Coordinate(getRandomX(), getRandomY()), 
+        socket.id, 
+        getRandomTeam()
+    );
 
     // send the players object to the new player
     socket.emit('currentPlayers', players);
@@ -65,8 +63,7 @@ io.on('connection', function (socket) {
 
     // when a player moves, update the player data
     socket.on('playerMovement', function (movementData) {
-        players[socket.id].x = movementData.x;
-        players[socket.id].y = movementData.y;
+        players[socket.id].position = new coordinateJS.Coordinate(movementData.x, movementData.y);
         players[socket.id].rotation = movementData.rotation;
         // emit a message to all players about the player that moved
         socket.broadcast.emit('playerMoved', players[socket.id]);
