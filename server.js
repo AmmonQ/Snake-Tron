@@ -64,7 +64,6 @@ io.on('connection', function (socket) {
     // when a player moves, update the player data
     socket.on('playerMovement', function (movementData) {
         players[socket.id].position = new coordinateJS.Coordinate(movementData.x, movementData.y);
-        players[socket.id].rotation = movementData.rotation;
         // emit a message to all players about the player that moved
         socket.broadcast.emit('playerMoved', players[socket.id]);
     });

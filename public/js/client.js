@@ -72,7 +72,6 @@ function movePlayer(self, playerInfo) {
 
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
         if (playerInfo.id === otherPlayer.id) {
-            otherPlayer.setRotation(playerInfo.rotation);
             otherPlayer.setPosition(playerInfo.position.x, playerInfo.position.y);
         }
     });
@@ -189,16 +188,14 @@ function update() {
         // emit player movement
         let x = this.ship.x;
         let y = this.ship.y;
-        let r = this.ship.rotation;
-        if (this.ship.oldPosition && (x !== this.ship.oldPosition.x || y !== this.ship.oldPosition.y || r !== this.ship.oldPosition.rotation)) {
-            this.socket.emit('  ', { x: this.ship.x, y: this.ship.y, rotation: this.ship.rotation });
+        if (this.ship.oldPosition && (x !== this.ship.oldPosition.x || y !== this.ship.oldPosition.y)) {
+            this.socket.emit('  ', { x: this.ship.x, y: this.ship.y });
         }
 
         // save old position data
         this.ship.oldPosition = {
             x: this.ship.x,
             y: this.ship.y,
-            rotation: this.ship.rotation
         };
     }
 }
