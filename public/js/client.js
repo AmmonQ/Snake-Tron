@@ -167,10 +167,6 @@ function addPlayer(self, playerInfo) {
 
     self.player = self.physics.add.image(playerInfo.position.x, playerInfo.position.y, 'player').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
     setPlayerColor(self.player, playerInfo);
-
-    // self.player.setDrag(100);
-    // self.player.setAngularDrag(100);
-    // self.player.setMaxVelocity(200);
 }
 
 function addOtherPlayers(self, playerInfo) {
@@ -204,31 +200,31 @@ function areCoordinatesAligned(player) {
     return (isCoordinateAligned(player.x) && isCoordinateAligned(player.y));
 }
 
-function setPlayerDirection(self) {
+function setPlayerDirection(player) {
 
-    if (!areCoordinatesAligned(self.player)) {
+    if (!areCoordinatesAligned(player)) {
         return;
     }
 
-    self.player.direction = self.player.nextDirection;
+    player.direction = player.nextDirection;
 }
 
-function setPlayerPosition(self) {
+function setPlayerPosition(player) {
 
     const POS_DELTA = 4;
 
-    switch (self.player.direction) {
+    switch (player.direction) {
         case Directions.LEFT:
-            self.player.setPosition(self.player.x - POS_DELTA, self.player.y);
+            player.setPosition(player.x - POS_DELTA, player.y);
             break;
         case Directions.RIGHT:
-            self.player.setPosition(self.player.x + POS_DELTA, self.player.y);
+            player.setPosition(player.x + POS_DELTA, player.y);
             break;
         case Directions.UP:
-            self.player.setPosition(self.player.x, self.player.y - POS_DELTA);
+            player.setPosition(player.x, player.y - POS_DELTA);
             break;
         case Directions.DOWN:
-            self.player.setPosition(self.player.x, self.player.y + POS_DELTA);
+            player.setPosition(player.x, player.y + POS_DELTA);
             break;
     }
 }
@@ -238,23 +234,25 @@ function setPlayerPosition(self) {
 // direction
 function update() {
 
-    if (this.player) {
+    let player = this.player;
+
+    if (player) {
         // set direction and position
         setPlayerNextDirection(this);
-        setPlayerDirection(this);
-        setPlayerPosition(this);
+        setPlayerDirection(player);
+        setPlayerPosition(player);
 
         // emit player movement
-        let x = this.player.x;
-        let y = this.player.y;
-        if (this.player.oldPosition && (x !== this.player.oldPosition.x || y !== this.player.oldPosition.y)) {
-            this.socket.emit('  ', { x: this.player.x, y: this.player.y });
+        let x = player.x;
+        let y = player.y;
+        if (player.oldPosition && (x !== player.oldPosition.x || y !== player.oldPosition.y)) {
+            this.socket.emit('  ', { x: player.x, y: player.y });
         }
 
         // save old position data
-        this.player.oldPosition = {
-            x: this.player.x,
-            y: this.player.y,
+        player.oldPosition = {
+            x: player.x,
+            y: player.y,
         };
     }
 }
