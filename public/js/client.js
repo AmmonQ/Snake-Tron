@@ -301,8 +301,9 @@ function update() {
         setPlayerPosition(player);
 
         if (!isPlayerInBounds(player)) {
-            this.player.destroy();
-            this.socket.emit("playerDied");
+            console.log("out of bounds");
+            // this.player.destroy();
+            // this.socket.emit("playerDied");
             return;
         }
 
