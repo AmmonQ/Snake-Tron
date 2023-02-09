@@ -87,6 +87,17 @@ io.on('connection', function (socket) {
         io.emit('appleLocation', apple.getPosition());
         io.emit('scoreUpdate', scores);
     });
+
+    socket.on('playerDied', function () {
+        console.log("Player died!");
+        players[socket.id] = new playerJS.Player(
+            new coordinateJS.Coordinate(getRandomX(), getRandomY()),
+            socket.id,
+            getRandomTeam()
+        );
+        socket.emit('currentPlayers', players);
+        socket.emit('appleLocation', apple.getPosition());
+    });
 });
 
 server.listen(8081, function () {

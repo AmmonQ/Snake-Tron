@@ -25,7 +25,7 @@ let config = {
     physics: {
         default: 'arcade',
         arcade: {
-            debug: true,
+            debug: false,
             gravity: { y: 0 }
         }
     },
@@ -104,6 +104,12 @@ function addOtherPlayers(self, playerInfo) {
 
     otherPlayer.id = playerInfo.id;
     self.otherPlayers.add(otherPlayer);
+}
+
+function addPlayer(self, playerInfo) {
+
+    self.player = addImage(self, playerInfo.position, 'player');
+    setPlayerColor(self.player, playerInfo);
 }
 
 function addPlayers(self, players) {
@@ -213,12 +219,6 @@ function setPlayerColor(player, playerInfo) {
     player.setTint(playerInfo.team === 'blue' ? BLUE : RED);
 }
 
-function addPlayer(self, playerInfo) {
-
-    self.player = addImage(self, playerInfo.position, 'player');
-    setPlayerColor(self.player, playerInfo);
-}
-
 function setPlayerNextDirection(self) {
 
     if (self.cursors.left.isDown && self.player.direction !== Directions.RIGHT) {
@@ -249,6 +249,21 @@ function setPlayerDirection(player) {
     player.direction = player.nextDirection;
 }
 
+function isPlayerInBounds(player) {
+
+    if (player.x < BORDER_SIZE) {
+        return false;
+    } else if (player.x > (WIDTH - BORDER_SIZE * 2)) {
+        return false;
+    } else if (player.y < BORDER_SIZE) {
+        return false;
+    } else if (player.y > (HEIGHT - BORDER_SIZE * 2)) {
+        return false;
+    }
+
+    return true;
+}
+
 function setPlayerPosition(player) {
 
     const POS_DELTA = 4;
@@ -266,6 +281,8 @@ function setPlayerPosition(player) {
         case Directions.DOWN:
             player.setPosition(player.x, player.y + POS_DELTA);
             break;
+        default:
+            break;
     }
 }
 
@@ -274,13 +291,20 @@ function setPlayerPosition(player) {
 // direction
 function update() {
 
-    let player = this.player;
+    // let player = this.player;
 
-    if (player) {
+    if (this.player) {
+        let player = this.player;
         // set direction and position
         setPlayerNextDirection(this);
         setPlayerDirection(player);
         setPlayerPosition(player);
+
+        if (!isPlayerInBounds(player)) {
+            this.player.destroy();
+            this.socket.emit("playerDied");
+            return;
+        }
 
         // emit player movement
         let x = player.x;
