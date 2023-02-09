@@ -65,7 +65,7 @@ io.on('connection', function (socket) {
     socket.on('playerMovement', function (movementData) {
         players[socket.id].position = new coordinateJS.Coordinate(movementData.x, movementData.y);
         // emit a message to all players about the player that moved
-        socket.broadcast.emit('playerMoved', players[socket.id]);
+        io.emit('playerMoved', players[socket.id]);
     });
 
     socket.on('appleCollected', function () {
@@ -95,8 +95,8 @@ io.on('connection', function (socket) {
             socket.id,
             getRandomTeam()
         );
-        socket.emit('currentPlayers', players);
-        socket.emit('appleLocation', apple.getPosition());
+        io.emit('currentPlayers', players);
+        io.emit('appleLocation', apple.getPosition());
     });
 });
 
