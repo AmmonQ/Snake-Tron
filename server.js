@@ -1,10 +1,11 @@
+let express = require('express');
+let app = express();
+let server = require('http').Server(app);
+let io = require('socket.io') (server);
+
 let coordinateJS = require('./public/js/model/coordinate.js');
 let appleJS = require('./public/js/model/apple.js');
 let playerJS = require('./public/js/model/player.js');
-
-const WIDTH = 700;
-const HEIGHT = 500;
-const BORDER = 50;
 
 const NUM_TEAMS = 2;
 const TEAM_COLORS = ['blue', 'red'];
@@ -12,17 +13,16 @@ const TEAM_COLORS = ['blue', 'red'];
 const BLUE_INDEX = 0;
 const RED_INDEX = 1;
 
+const BORDER_SIZE = 32;
+
+const ROW_COL_SIZE = 32;
+const NUM_ROWS = 20;
+const NUM_COLS = 30;
+
 let scores = {
     blue: 0,
     red: 0
 };
-
-let express = require('express');
-let app = express();
-let server = require('http').Server(app);
-let io = require('socket.io') (server);
-
-console.log(__dirname);
 
 let players = {};
 
@@ -87,6 +87,17 @@ io.on('connection', function (socket) {
         io.emit('appleLocation', apple.getPosition());
         io.emit('scoreUpdate', scores);
     });
+
+    socket.on('playerDied', function () {
+        console.log("Player died!");
+        players[socket.id] = new playerJS.Player(
+            new coordinateJS.Coordinate(getRandomX(), getRandomY()),
+            socket.id,
+            getRandomTeam()
+        );
+        socket.emit('currentPlayers', players);
+        socket.emit('appleLocation', apple.getPosition());
+    });
 });
 
 server.listen(8081, function () {
@@ -102,15 +113,15 @@ function getRandomTeam() {
 }
 
 function getRandomX() {
-    return getRandomCoordinate(WIDTH);
+    return (getRandomCoordinate(NUM_COLS) * ROW_COL_SIZE) + BORDER_SIZE;
 }
 
 function getRandomY() {
-    return getRandomCoordinate(HEIGHT);
+    return (getRandomCoordinate(NUM_ROWS) * ROW_COL_SIZE) + BORDER_SIZE;
 }
 
 function getRandomCoordinate(scale) {
-    return getRandomNum(scale) + BORDER;
+    return getRandomNum(scale);
 }
 
 function getRandomNum(scale) {

@@ -1,17 +1,31 @@
 const BLUE = 0x0000FF;
 const RED = 0xFF0000;
-const BG_COLOR_STR = '#005C29';
+const BG_COLOR_STR = '#009C29';
+const BORDER_SIZE = 32;
+
+const ROW_COL_SIZE = 32;
+const NUM_ROWS = 20;
+const NUM_COLS = 30;
+const WIDTH = ROW_COL_SIZE * NUM_COLS + BORDER_SIZE * 2;
+const HEIGHT = ROW_COL_SIZE * NUM_ROWS + BORDER_SIZE * 2;
+
+const Directions = {
+	LEFT: 'left',
+	RIGHT: 'right',
+	UP: 'up',
+	DOWN: 'down'
+};
 
 let config = {
     type: Phaser.AUTO,
     parent: 'phaser-example',
-    width: 1000,
-    height: 800,
+    width: WIDTH,
+    height: HEIGHT,
     backgroundColor: BG_COLOR_STR,
     physics: {
         default: 'arcade',
         arcade: {
-            debug: true,
+            debug: false,
             gravity: { y: 0 }
         }
     },
@@ -24,11 +38,50 @@ let config = {
 
 let game = new Phaser.Game(config);
 
+function drawBorder(graphics, alpha) {
+
+    const BORDER_COLOR = 0x004C29;
+
+    graphics.fillStyle(BORDER_COLOR, alpha);
+
+    graphics.fillRect(0, 0, WIDTH, BORDER_SIZE);
+    graphics.fillRect(0, 0, BORDER_SIZE, HEIGHT);
+    graphics.fillRect(WIDTH - BORDER_SIZE, 0, BORDER_SIZE, HEIGHT);
+    graphics.fillRect(0, HEIGHT - BORDER_SIZE, WIDTH, BORDER_SIZE);
+}
+
+// draw checkerboard for game
+function drawBoard(graphics) {
+
+    const FG_COLOR = 0x008C29;
+    const ALPHA = 1.0;
+
+    graphics.fillStyle(FG_COLOR, ALPHA);
+
+    let previous = false;
+
+    for (let col = BORDER_SIZE; col < HEIGHT - BORDER_SIZE; col += ROW_COL_SIZE) {
+        for (let row = BORDER_SIZE; row < WIDTH - BORDER_SIZE; row += ROW_COL_SIZE) {
+            if (!previous) {
+                graphics.fillRect(row, col, ROW_COL_SIZE, ROW_COL_SIZE);
+            }
+
+            previous = !previous;
+        }
+        previous = !previous;
+    }
+
+    drawBorder(graphics, ALPHA);
+}
+
 function preload() {
+
     this.load.image('background', 'assets/grass.png');
     this.load.image('player', 'assets/pink_snake_tongue_pixel.png');
     this.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
     this.load.image('apple', 'assets/apple.png');
+
+    drawBoard(this.add.graphics());
 }
 
 function initScoreText(self) {
@@ -44,6 +97,21 @@ function initScoreText(self) {
     self.redScoreText = self.add.text(RED_X, SCORE_Y, '', { fontSize: FONT_SIZE, fill: RED_STR });
 }
 
+function addOtherPlayers(self, playerInfo) {
+
+    const otherPlayer = self.add.sprite(playerInfo.position.x, playerInfo.position.y, 'otherPlayer').setOrigin(0.0, 0.0);
+    setPlayerColor(otherPlayer, playerInfo);
+
+    otherPlayer.id = playerInfo.id;
+    self.otherPlayers.add(otherPlayer);
+}
+
+function addPlayer(self, playerInfo) {
+
+    self.player = addImage(self, playerInfo.position, 'player');
+    setPlayerColor(self.player, playerInfo);
+}
+
 function addPlayers(self, players) {
 
     Object.keys(players).forEach(function (id) {
@@ -54,6 +122,7 @@ function addPlayers(self, players) {
         }
     });
 }
+
 function disconnect(self, playerId) {
 
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
@@ -61,11 +130,6 @@ function disconnect(self, playerId) {
             otherPlayer.destroy();
         }
     });
-}
-function updateScores(self, scores) {
-
-    self.blueScoreText.setText('Blue: ' + scores.blue);
-    self.redScoreText.setText('Red: ' + scores.red);
 }
 
 function movePlayer(self, playerInfo) {
@@ -75,6 +139,45 @@ function movePlayer(self, playerInfo) {
             otherPlayer.setPosition(playerInfo.position.x, playerInfo.position.y);
         }
     });
+}
+
+function updateScores(self, scores) {
+
+    self.blueScoreText.setText('Blue: ' + scores.blue);
+    self.redScoreText.setText('Red: ' + scores.red);
+}
+
+function isSamePosition(player, apple) {
+
+    let playerRow = player.y / ROW_COL_SIZE;
+    let playerCol = player.x / ROW_COL_SIZE;
+
+    let appleRow = apple.y / ROW_COL_SIZE;
+    let appleCol = apple.x / ROW_COL_SIZE;
+
+    return ((playerRow === appleRow) && (playerCol === appleCol));
+}
+
+function addImage(self, position, image) {
+    return self.physics.add.image(position.x, position.y, image).setOrigin(0.0, 0.0);
+}
+
+function updateApple(self, appleLocation) {
+
+    if (self.apple) {
+        self.apple.destroy();
+    }
+
+    self.apple = addImage(self, appleLocation, 'apple');
+
+    self.physics.add.overlap(self.player, self.apple, function () {
+
+        if (!isSamePosition(self.player, self.apple)) {
+            return;
+        }
+
+        this.socket.emit('appleCollected');
+    }, null, self);
 }
 
 function create() {
@@ -108,16 +211,7 @@ function create() {
     });
 
     this.socket.on('appleLocation', function (appleLocation) {
-
-        if (self.apple) {
-            self.apple.destroy();
-        }
-
-        self.apple = self.physics.add.image(appleLocation.x, appleLocation.y, 'apple');
-
-        self.physics.add.overlap(self.player, self.apple, function () {
-            this.socket.emit('appleCollected');
-        }, null, self);
+        updateApple(self, appleLocation);
     });
 }
 
@@ -125,52 +219,69 @@ function setPlayerColor(player, playerInfo) {
     player.setTint(playerInfo.team === 'blue' ? BLUE : RED);
 }
 
-function addPlayer(self, playerInfo) {
+function setPlayerNextDirection(self) {
 
-    self.player = self.physics.add.image(playerInfo.position.x, playerInfo.position.y, 'player').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
-    setPlayerColor(self.player, playerInfo);
-
-    self.player.setDrag(100);
-    self.player.setAngularDrag(100);
-    self.player.setMaxVelocity(200);
-}
-
-function addOtherPlayers(self, playerInfo) {
-
-    const otherPlayer = self.add.sprite(playerInfo.position.x, playerInfo.position.y, 'otherPlayer').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
-    setPlayerColor(otherPlayer, playerInfo);
-
-    otherPlayer.id = playerInfo.id;
-    self.otherPlayers.add(otherPlayer);
-}
-
-function setPlayerDirection(self) {
-
-    if (self.cursors.left.isDown && self.player.direction !== 'right') {
-        self.player.direction = 'left';
-    } else if (self.cursors.right.isDown && self.player.direction !== 'left') {
-        self.player.direction = 'right';
-    } else if (self.cursors.up.isDown && self.player.direction !== 'down') {
-        self.player.direction = 'up';
-    } else if (self.cursors.down.isDown && self.player.direction !== 'up') {
-        self.player.direction = 'down';
+    if (self.cursors.left.isDown && self.player.direction !== Directions.RIGHT) {
+        self.player.nextDirection = Directions.LEFT;
+    } else if (self.cursors.right.isDown && self.player.direction !== Directions.LEFT) {
+        self.player.nextDirection = Directions.RIGHT;
+    } else if (self.cursors.up.isDown && self.player.direction !== Directions.DOWN) {
+        self.player.nextDirection = Directions.UP;
+    } else if (self.cursors.down.isDown && self.player.direction !== Directions.UP) {
+        self.player.nextDirection = Directions.DOWN;
     }
 }
 
-function setPlayerPosition(self) {
+function isCoordinateAligned(coordinate) {
+    return ((coordinate % ROW_COL_SIZE) === 0);
+}
 
-    switch (self.player.direction) {
-        case 'left':
-            self.player.setPosition(self.player.x - 5, self.player.y);
+function areCoordinatesAligned(player) {
+    return (isCoordinateAligned(player.x) && isCoordinateAligned(player.y));
+}
+
+function setPlayerDirection(player) {
+
+    if (!areCoordinatesAligned(player)) {
+        return;
+    }
+
+    player.direction = player.nextDirection;
+}
+
+function isPlayerInBounds(player) {
+
+    if (player.x < BORDER_SIZE) {
+        return false;
+    } else if (player.x > (WIDTH - BORDER_SIZE * 2)) {
+        return false;
+    } else if (player.y < BORDER_SIZE) {
+        return false;
+    } else if (player.y > (HEIGHT - BORDER_SIZE * 2)) {
+        return false;
+    }
+
+    return true;
+}
+
+function setPlayerPosition(player) {
+
+    const POS_DELTA = 4;
+
+    switch (player.direction) {
+        case Directions.LEFT:
+            player.setPosition(player.x - POS_DELTA, player.y);
             break;
-        case 'right':
-            self.player.setPosition(self.player.x + 5, self.player.y);
+        case Directions.RIGHT:
+            player.setPosition(player.x + POS_DELTA, player.y);
             break;
-        case 'up':
-            self.player.setPosition(self.player.x, self.player.y - 5);
+        case Directions.UP:
+            player.setPosition(player.x, player.y - POS_DELTA);
             break;
-        case 'down':
-            self.player.setPosition(self.player.x, self.player.y + 5);
+        case Directions.DOWN:
+            player.setPosition(player.x, player.y + POS_DELTA);
+            break;
+        default:
             break;
     }
 }
@@ -180,22 +291,32 @@ function setPlayerPosition(self) {
 // direction
 function update() {
 
+    // let player = this.player;
+
     if (this.player) {
+        let player = this.player;
         // set direction and position
-        setPlayerDirection(this);
-        setPlayerPosition(this);
+        setPlayerNextDirection(this);
+        setPlayerDirection(player);
+        setPlayerPosition(player);
+
+        if (!isPlayerInBounds(player)) {
+            this.player.destroy();
+            this.socket.emit("playerDied");
+            return;
+        }
 
         // emit player movement
-        let x = this.player.x;
-        let y = this.player.y;
-        if (this.player.oldPosition && (x !== this.player.oldPosition.x || y !== this.player.oldPosition.y)) {
-            this.socket.emit('  ', { x: this.player.x, y: this.player.y });
+        let x = player.x;
+        let y = player.y;
+        if (player.oldPosition && (x !== player.oldPosition.x || y !== player.oldPosition.y)) {
+            this.socket.emit('  ', { x: player.x, y: player.y });
         }
 
         // save old position data
-        this.player.oldPosition = {
-            x: this.player.x,
-            y: this.player.y,
+        player.oldPosition = {
+            x: player.x,
+            y: player.y,
         };
     }
 }
