@@ -311,7 +311,7 @@ function update() {
         let x = player.x;
         let y = player.y;
         if (player.oldPosition && (x !== player.oldPosition.x || y !== player.oldPosition.y)) {
-            this.socket.emit('  ', { x: player.x, y: player.y });
+            this.socket.emit('playerMovement', { x: player.x, y: player.y });
         }
 
         // save old position data
