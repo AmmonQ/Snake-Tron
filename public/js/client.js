@@ -291,8 +291,6 @@ function setPlayerPosition(player) {
 // direction
 function update() {
 
-    // let player = this.player;
-
     if (this.player) {
         let player = this.player;
 
