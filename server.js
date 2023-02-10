@@ -95,8 +95,12 @@ io.on('connection', function (socket) {
             socket.id,
             getRandomTeam()
         );
-        io.emit('currentPlayers', players);
-        io.emit('appleLocation', apple.getPosition());
+        // io.emit('currentPlayers', players);
+        // io.emit('appleLocation', apple.getPosition());
+        // io.emit("playerMovement", players[socket.id].position);
+        // socket.emit('currentPlayers', players);
+        // socket.emit('appleLocation', apple.getPosition());
+        // socket.emit("playerMovement", players[socket.id].position);
     });
 });
 

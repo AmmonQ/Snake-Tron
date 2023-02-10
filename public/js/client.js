@@ -295,17 +295,18 @@ function update() {
 
     if (this.player) {
         let player = this.player;
+
+        if (!isPlayerInBounds(player)) {
+            console.log("out of bounds");
+            this.player.destroy();
+            this.socket.emit("playerDied");
+            return;
+        }
+
         // set direction and position
         setPlayerNextDirection(this);
         setPlayerDirection(player);
         setPlayerPosition(player);
-
-        if (!isPlayerInBounds(player)) {
-            console.log("out of bounds");
-            // this.player.destroy();
-            this.socket.emit("playerDied");
-            return;
-        }
 
         // emit player movement
         let x = player.x;
