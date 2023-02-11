@@ -291,27 +291,26 @@ function setPlayerPosition(player) {
 // direction
 function update() {
 
-    // let player = this.player;
-
     if (this.player) {
         let player = this.player;
+
+        if (!isPlayerInBounds(player)) {
+            console.log("out of bounds");
+            this.player.destroy();
+            this.socket.emit("playerDied");
+            return;
+        }
+
         // set direction and position
         setPlayerNextDirection(this);
         setPlayerDirection(player);
         setPlayerPosition(player);
 
-        if (!isPlayerInBounds(player)) {
-            console.log("out of bounds");
-            // this.player.destroy();
-            this.socket.emit("playerDied");
-            return;
-        }
-
         // emit player movement
         let x = player.x;
         let y = player.y;
         if (player.oldPosition && (x !== player.oldPosition.x || y !== player.oldPosition.y)) {
-            this.socket.emit('  ', { x: player.x, y: player.y });
+            this.socket.emit('playerMovement', { x: player.x, y: player.y });
         }
 
         // save old position data

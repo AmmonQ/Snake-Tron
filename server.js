@@ -89,14 +89,14 @@ io.on('connection', function (socket) {
     });
 
     socket.on('playerDied', function () {
-        console.log("Player died!");
         players[socket.id] = new playerJS.Player(
             new coordinateJS.Coordinate(getRandomX(), getRandomY()),
             socket.id,
-            getRandomTeam()
+            players[socket.id].team
         );
-        io.emit('currentPlayers', players);
-        io.emit('appleLocation', apple.getPosition());
+        socket.emit('currentPlayers', players);
+        socket.emit('appleLocation', apple.getPosition());
+        io.emit("playerMoved", players[socket.id]);
     });
 });
 
