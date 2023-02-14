@@ -6,4 +6,4 @@ jobs:
     steps:
       - run: "ls"
       - run: "npm install -g browserify"
-      - run: "browserify shared/constants.js public/js/client.js -o public/js/bundle.js
+      - run: "browserify shared/constants.js public/js/client.js -o public/js/bundle.js"
