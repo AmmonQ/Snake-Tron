@@ -1,7 +1,7 @@
 name: Run Browserify
 on: [push]
 jobs:
-  Run-Browserify
-  runs-on: ubuntu-latest
-  steps:
-    - run: "browserify shared/constants.js public/js/client.js -o public/js/bundle.js"
+  Run-Browserify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: "browserify shared/constants.js public/js/client.js -o public/js/bundle.js"
