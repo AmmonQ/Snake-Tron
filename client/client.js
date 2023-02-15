@@ -228,6 +228,7 @@ function create() {
 }
 
 function setPlayerColor(player, playerInfo) {
+    console.log("BLUE: " + BLUE + " RED: " + RED);
     player.setTint(playerInfo.team === 'blue' ? BLUE : RED);
 }
 
