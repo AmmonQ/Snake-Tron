@@ -21,7 +21,7 @@ jobs:
       - name: setup github account
         run: |
           git config --local user.email "aq229@byu.edu"
-          git config --local user.name "auto-updater"
+          git config --local user.name "AmmonQ"
       - name: check for changes
         run: git status
       - name: stage changed file
