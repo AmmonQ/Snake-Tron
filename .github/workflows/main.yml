@@ -4,6 +4,5 @@ jobs:
   Run-Browserify:
     runs-on: ubuntu-latest
     steps:
-      - run: "ls"
       - run: "npm install -g browserify"
-      - run: "browserify shared/constants.js public/js/client.js -o public/js/bundle.js"
+      - run: "browserify client/client.js  shared/constants.js -o public/js/bundle.js"
