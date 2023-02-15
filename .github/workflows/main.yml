@@ -18,6 +18,10 @@ jobs:
       - name: Run Browserify
         run: npm ci
 
+      - name: setup github account
+        run: |
+          git config --global user.email "aq229@byu.edu"
+          git config --global user.name "AmmonQ"
       - name: check for changes
         run: git status
       - name: stage changed file
