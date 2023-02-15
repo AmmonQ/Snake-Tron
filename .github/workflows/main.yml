@@ -12,8 +12,8 @@ jobs:
           node-version: '18.x'
 
       - name: npm install
-        run: "npm install"
-      - name: "Install Browserify"
-        run: "npm install -g browserify"
-      - name: "Run Browserify"
-        run: "browserify client/client.js  shared/constants.js -o public/js/bundle.js"
+        run: npm install
+      - name: Install Browserify
+        run: npm install -g browserify
+      - name: Run Browserify
+        run: npm ci
