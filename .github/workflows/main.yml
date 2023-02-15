@@ -16,7 +16,7 @@ jobs:
       - name: Install Browserify
         run: npm install -g browserify
       - name: Run Browserify
-        run: npm ci
+        run: browserify client/client.js shared/constants.js -o public/js/bundle.js
 
       - name: setup github account
         run: |
