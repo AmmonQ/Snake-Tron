@@ -20,13 +20,13 @@ jobs:
 
       - name: setup github account
         run: |
-          git config --global user.email "aq229@byu.edu"
-          git config --global user.name "AmmonQ"
+          git config --local user.email "aq229@byu.edu"
+          git config --local user.name "auto-updater"
       - name: check for changes
         run: git status
       - name: stage changed file
-        run: git add public/js/bundle.js
+        run: git add .
       - name: commit code
-        run: git commit -m "auto update bundle.js"
+        run: git commit -m "auto update bundle.js on $(date)"
       - name: push code
         run: git push
