@@ -29,4 +29,7 @@ jobs:
       - name: commit code
         run: git commit -m "auto update bundle.js on $(date)"
       - name: push code
-        run: git push
+        users: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
