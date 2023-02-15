@@ -17,3 +17,12 @@ jobs:
         run: npm install -g browserify
       - name: Run Browserify
         run: npm ci
+
+      - name: check for changes
+        run: git status
+      - name: stage changed file
+        run: git add public/js/bundle.js
+      - name: commit code
+        run: git commit -m "auto update bundle.js"
+      - name: push code
+        run: git push
