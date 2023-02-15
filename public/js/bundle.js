@@ -229,6 +229,7 @@ function create() {
 }
 
 function setPlayerColor(player, playerInfo) {
+    console.log("BLUE: " + BLUE + " RED: " + RED);
     player.setTint(playerInfo.team === 'blue' ? BLUE : RED);
 }
 
@@ -333,10 +334,12 @@ function update() {
         };
     }
 }
+
 },{"../shared/constants.js":2}],2:[function(require,module,exports){
 module.exports.Constants = class {
 
-    static BLUE = 0x0000FF;
+    // static BLUE = 0x0000FF;
+    static BLUE = 0x00FF00;
     static RED = 0xFF0000;
     static BG_COLOR_STR = '#009C29';
     static BORDER_SIZE = 32;
