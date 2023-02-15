@@ -1,4 +1,4 @@
-let constantsJS = require('../shared/constants.js');
+let constantsJS = require('./shared/constants.js');
 
 // const BLUE = 0x0000FF;
 // const RED = 0xFF0000;
