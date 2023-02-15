@@ -4,5 +4,16 @@ jobs:
   Run-Browserify:
     runs-on: ubuntu-latest
     steps:
-      - run: "npm install -g browserify"
-      - run: "browserify client/client.js  shared/constants.js -o public/js/bundle.js"
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v1
+        with:
+          node-version: '18.x'
+
+      - name: npm install
+        run: "npm install"
+      - name: "Install Browserify"
+        run: "npm install -g browserify"
+      - name: "Run Browserify"
+        run: "browserify client/client.js  shared/constants.js -o public/js/bundle.js"
