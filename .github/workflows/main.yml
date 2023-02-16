@@ -1,4 +1,4 @@
-name: Run Browserify
+name: CI/CD Tasks
 on: [push]
 jobs:
   Run-Browserify:
@@ -36,6 +36,7 @@ jobs:
           
   build:
     runs-on: ubuntu-latest
+    needs: Run-Browserify
 
     steps:
       - uses: actions/checkout@v2
