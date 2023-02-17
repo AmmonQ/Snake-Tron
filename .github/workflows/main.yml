@@ -10,7 +10,7 @@ jobs:
         id: filter
         with:
           filters: |
-            changedFiles
+            changedFiles:
             - 'client/**'
             - 'shared/**'
             
@@ -19,7 +19,7 @@ jobs:
         if: steps.filter.outputs.changedFiles == 'true'
         run: echo "changedFiles"
       - name: not changedFiles tests
-        if: steps.filter.outputs.workflows != 'true'
+        if: steps.filter.outputs.changedFiles != 'true'
         run: echo "NOT changedFiles"
 
   Run-Browserify:
