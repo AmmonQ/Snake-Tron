@@ -4,28 +4,30 @@ jobs:
   paths-filter:
     runs-on: ubuntu-latest
     outputs:
-      output1: ${{ steps.filter.outputs.changedFiles }}
+      client: ${{ steps.filter.outputs.client }}
+      shared: ${{ steps.filter.outputs.shared }}
     steps:
       - uses: dorny/paths-filter@v2
         id: filter
         with:
           filters: |
-            changedFiles:
+            client:
             - 'client/**'
+            shared:
             - 'shared/**'
             
         # run only if 'changedFiles' files were changed
-      - name: changedFiles tests
-        if: steps.filter.outputs.changedFiles == 'true'
+      - name: client tests or shared tests
+        if: steps.filter.outputs.client == 'true' || steps.filter.outputs.shared == 'true'
         run: echo "changedFiles"
       - name: not changedFiles tests
-        if: steps.filter.outputs.changedFiles != 'true'
+        if: steps.filter.outputs.client != 'true' && steps.filter.outputs.shared != 'true'
         run: echo "NOT changedFiles"
 
   Run-Browserify:
     runs-on: ubuntu-latest
     needs: paths-filter
-    if: needs.paths-filter.outputs.output1 == 'true'
+    if: needs.paths-filter.outputs.client == 'true' || steps.filter.outputs.shared == 'true'
     steps:
       - uses: actions/checkout@v2
 
