@@ -153,6 +153,7 @@ function movePlayer(self, playerInfo) {
     });
 }
 
+// TODO: Should be in Server
 function updateScores(self, scores) {
 
     self.blueScoreText.setText('Blue: ' + scores.blue);
@@ -175,6 +176,7 @@ function addImage(self, position, image) {
     return self.physics.add.image(position.x, position.y, image).setOrigin(0.0, 0.0);
 }
 
+// TODO: Should be in Server
 function updateApple(self, appleLocation) {
 
     if (self.apple) {
