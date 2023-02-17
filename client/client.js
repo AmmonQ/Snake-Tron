@@ -159,6 +159,7 @@ function updateScores(self, scores) {
     self.redScoreText.setText('Red: ' + scores.red);
 }
 
+// TODO: Should be in Server
 function isSamePosition(player, apple) {
 
     let playerRow = player.y / ROW_COL_SIZE;
@@ -227,11 +228,13 @@ function create() {
     });
 }
 
+// TODO: Should be in Server
 function setPlayerColor(player, playerInfo) {
     console.log("BLUE: " + BLUE + " RED: " + RED);
     player.setTint(playerInfo.team === 'blue' ? BLUE : RED);
 }
 
+// Client gets input and passes it up to server
 function setPlayerNextDirection(self) {
 
     if (self.cursors.left.isDown && self.player.direction !== Directions.RIGHT) {
@@ -245,10 +248,11 @@ function setPlayerNextDirection(self) {
     }
 }
 
+// TODO: Should be in Server
 function isCoordinateAligned(coordinate) {
     return ((coordinate % ROW_COL_SIZE) === 0);
 }
-
+// TODO: Should be in Server
 function areCoordinatesAligned(player) {
     return (isCoordinateAligned(player.x) && isCoordinateAligned(player.y));
 }
@@ -261,7 +265,7 @@ function setPlayerDirection(player) {
 
     player.direction = player.nextDirection;
 }
-
+// TODO: Should be in Server
 function isPlayerInBounds(player) {
 
     if (player.x < BORDER_SIZE) {
@@ -276,7 +280,7 @@ function isPlayerInBounds(player) {
 
     return true;
 }
-
+// TODO: Should be in Server
 function setPlayerPosition(player) {
 
     const POS_DELTA = 4;

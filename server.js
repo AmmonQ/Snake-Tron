@@ -108,6 +108,7 @@ server.listen(8081, function () {
     console.log(`Listening on ${server.address().port}`);
 });
 
+// This is what the server should do, make decisions and send information about the decision to clients
 function setAppleCoordinates() {
     apple.setPosition(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
 }
