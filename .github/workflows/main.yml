@@ -15,14 +15,6 @@ jobs:
             - 'client/**'
             shared:
             - 'shared/**'
-            
-        # run only if 'changedFiles' files were changed
-      - name: client tests or shared tests
-        if: ${{ steps.filter.outputs.client == 'true' || steps.filter.outputs.shared == 'true' }}
-        run: echo "changedFiles"
-      - name: not changedFiles tests
-        if: ${{ steps.filter.outputs.client != 'true' && steps.filter.outputs.shared != 'true' }}
-        run: echo "NOT changedFiles"
 
   Run-Browserify:
     runs-on: ubuntu-latest
