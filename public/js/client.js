@@ -244,7 +244,7 @@ function areCoordinatesAligned(player) {
     return (isCoordinateAligned(player.x) && isCoordinateAligned(player.y));
 }
 
-function setPlayerDirection(playerIconsArray) {
+function setPlayerDirection(self, playerIconsArray) {
 
     let player = playerIconsArray[0];
 
@@ -252,7 +252,7 @@ function setPlayerDirection(playerIconsArray) {
         return;
     }
 
-    addPlayerIcon(playerIconsArray);
+    addPlayerIcon(self, playerIconsArray);
 
     player.direction = player.nextDirection;
 }
@@ -294,7 +294,7 @@ function setPlayerPosition(player) {
     }
 }
 
-function addPlayerIcon(playerIconsArray) {
+function addPlayerIcon(self, playerIconsArray) {
 
     if (!appleCollected) {
         return;
@@ -308,7 +308,7 @@ function addPlayerIcon(playerIconsArray) {
     //TODO: set x/y based on last grid position
 
 
-    let position;
+    let position = {x: 0, y: 0};
     position.x = x;
     position.y = y;
     playerIconsArray.push(addImage(self, position, 'playerIcon'));
@@ -335,7 +335,7 @@ function update() {
 
         // set direction and position
         setPlayerNextDirection(this);
-        setPlayerDirection(this.playerIconsArray);
+        setPlayerDirection(this, this.playerIconsArray);
         setPlayerPosition(player);
 
         // emit player movement
