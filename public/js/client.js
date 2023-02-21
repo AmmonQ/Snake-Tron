@@ -77,7 +77,7 @@ function drawBoard(graphics) {
 function preload() {
 
     this.load.image('background', 'assets/grass.png');
-    this.load.image('player', 'assets/pink_snake_tongue_pixel.png');
+    this.load.image('playerIcon', 'assets/pink_snake_tongue_pixel.png');
     this.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
     this.load.image('apple', 'assets/apple.png');
 
@@ -108,7 +108,7 @@ function addOtherPlayers(self, playerInfo) {
 
 function addPlayer(self, playerInfo) {
 
-    self.player = addImage(self, playerInfo.position, 'player');
+    self.player = addImage(self, playerInfo.position, 'playerIcon');
     setPlayerColor(self.player, playerInfo);
 }
 
