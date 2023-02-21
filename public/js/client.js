@@ -108,8 +108,8 @@ function addOtherPlayers(self, playerInfo) {
 
 function addPlayer(self, playerInfo) {
 
-    self.player = addImage(self, playerInfo.position, 'playerIcon');
-    setPlayerColor(self.player, playerInfo);
+    self.playerIconsArray = addImage(self, playerInfo.position, 'playerIcon');
+    setPlayerColor(self.playerIconsArray, playerInfo);
 }
 
 function addPlayers(self, players) {
@@ -170,9 +170,9 @@ function updateApple(self, appleLocation) {
 
     self.apple = addImage(self, appleLocation, 'apple');
 
-    self.physics.add.overlap(self.player, self.apple, function () {
+    self.physics.add.overlap(self.playerIconsArray, self.apple, function () {
 
-        if (!isSamePosition(self.player, self.apple)) {
+        if (!isSamePosition(self.playerIconsArray, self.apple)) {
             return;
         }
 
@@ -221,14 +221,14 @@ function setPlayerColor(player, playerInfo) {
 
 function setPlayerNextDirection(self) {
 
-    if (self.cursors.left.isDown && self.player.direction !== Directions.RIGHT) {
-        self.player.nextDirection = Directions.LEFT;
-    } else if (self.cursors.right.isDown && self.player.direction !== Directions.LEFT) {
-        self.player.nextDirection = Directions.RIGHT;
-    } else if (self.cursors.up.isDown && self.player.direction !== Directions.DOWN) {
-        self.player.nextDirection = Directions.UP;
-    } else if (self.cursors.down.isDown && self.player.direction !== Directions.UP) {
-        self.player.nextDirection = Directions.DOWN;
+    if (self.cursors.left.isDown && self.playerIconsArray.direction !== Directions.RIGHT) {
+        self.playerIconsArray.nextDirection = Directions.LEFT;
+    } else if (self.cursors.right.isDown && self.playerIconsArray.direction !== Directions.LEFT) {
+        self.playerIconsArray.nextDirection = Directions.RIGHT;
+    } else if (self.cursors.up.isDown && self.playerIconsArray.direction !== Directions.DOWN) {
+        self.playerIconsArray.nextDirection = Directions.UP;
+    } else if (self.cursors.down.isDown && self.playerIconsArray.direction !== Directions.UP) {
+        self.playerIconsArray.nextDirection = Directions.DOWN;
     }
 }
 
@@ -291,12 +291,12 @@ function setPlayerPosition(player) {
 // direction
 function update() {
 
-    if (this.player) {
-        let player = this.player;
+    if (this.playerIconsArray) {
+        let player = this.playerIconsArray;
 
         if (!isPlayerInBounds(player)) {
             console.log("out of bounds");
-            this.player.destroy();
+            this.playerIconsArray.destroy();
             this.socket.emit("playerDied");
             return;
         }
