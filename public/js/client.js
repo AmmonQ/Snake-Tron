@@ -108,7 +108,7 @@ function addOtherPlayers(self, playerInfo) {
 
 function addPlayer(self, playerInfo) {
 
-    self.playerIconsArray = addImage(self, playerInfo.position, 'playerIcon');
+    self.playerIconsArray = [addImage(self, playerInfo.position, 'playerIcon')];
     setPlayerColor(self.playerIconsArray, playerInfo);
 }
 
@@ -172,7 +172,7 @@ function updateApple(self, appleLocation) {
 
     self.physics.add.overlap(self.playerIconsArray, self.apple, function () {
 
-        if (!isSamePosition(self.playerIconsArray, self.apple)) {
+        if (!isSamePosition(self.playerIconsArray[0], self.apple)) {
             return;
         }
 
@@ -221,14 +221,14 @@ function setPlayerColor(player, playerInfo) {
 
 function setPlayerNextDirection(self) {
 
-    if (self.cursors.left.isDown && self.playerIconsArray.direction !== Directions.RIGHT) {
-        self.playerIconsArray.nextDirection = Directions.LEFT;
-    } else if (self.cursors.right.isDown && self.playerIconsArray.direction !== Directions.LEFT) {
-        self.playerIconsArray.nextDirection = Directions.RIGHT;
-    } else if (self.cursors.up.isDown && self.playerIconsArray.direction !== Directions.DOWN) {
-        self.playerIconsArray.nextDirection = Directions.UP;
-    } else if (self.cursors.down.isDown && self.playerIconsArray.direction !== Directions.UP) {
-        self.playerIconsArray.nextDirection = Directions.DOWN;
+    if (self.cursors.left.isDown && self.playerIconsArray[0].direction !== Directions.RIGHT) {
+        self.playerIconsArray[0].nextDirection = Directions.LEFT;
+    } else if (self.cursors.right.isDown && self.playerIconsArray[0].direction !== Directions.LEFT) {
+        self.playerIconsArray[0].nextDirection = Directions.RIGHT;
+    } else if (self.cursors.up.isDown && self.playerIconsArray[0].direction !== Directions.DOWN) {
+        self.playerIconsArray[0].nextDirection = Directions.UP;
+    } else if (self.cursors.down.isDown && self.playerIconsArray[0].direction !== Directions.UP) {
+        self.playerIconsArray[0].nextDirection = Directions.DOWN;
     }
 }
 
@@ -292,11 +292,11 @@ function setPlayerPosition(player) {
 function update() {
 
     if (this.playerIconsArray) {
-        let player = this.playerIconsArray;
+        let player = this.playerIconsArray[0];
 
         if (!isPlayerInBounds(player)) {
             console.log("out of bounds");
-            this.playerIconsArray.destroy();
+            this.playerIconsArray[0].destroy();
             this.socket.emit("playerDied");
             return;
         }
