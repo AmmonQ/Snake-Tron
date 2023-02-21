@@ -36,6 +36,8 @@ let config = {
     }
 };
 
+let appleCollected = false;
+
 let game = new Phaser.Game(config);
 
 function drawBorder(graphics, alpha) {
@@ -176,6 +178,8 @@ function updateApple(self, appleLocation) {
             return;
         }
 
+        appleCollected = true;
+
         this.socket.emit('appleCollected');
     }, null, self);
 }
@@ -240,11 +244,15 @@ function areCoordinatesAligned(player) {
     return (isCoordinateAligned(player.x) && isCoordinateAligned(player.y));
 }
 
-function setPlayerDirection(player) {
+function setPlayerDirection(playerIconsArray) {
+
+    let player = playerIconsArray[0];
 
     if (!areCoordinatesAligned(player)) {
         return;
     }
+
+    addPlayerIcon(playerIconsArray);
 
     player.direction = player.nextDirection;
 }
@@ -286,6 +294,30 @@ function setPlayerPosition(player) {
     }
 }
 
+function addPlayerIcon(playerIconsArray) {
+
+    if (!appleCollected) {
+        return;
+    }
+
+    let headIcon = playerIconsArray[0];
+
+    let x = headIcon.x;
+    let y = headIcon.y;
+
+    //TODO: set x/y based on last grid position
+
+
+    let position;
+    position.x = x;
+    position.y = y;
+    playerIconsArray.push(addImage(self, position, 'playerIcon'));
+
+
+
+    appleCollected = false;
+}
+
 // this handles the movement of the snake
 // so the snake is always moving and only changes
 // direction
@@ -303,7 +335,7 @@ function update() {
 
         // set direction and position
         setPlayerNextDirection(this);
-        setPlayerDirection(player);
+        setPlayerDirection(this.playerIconsArray);
         setPlayerPosition(player);
 
         // emit player movement
