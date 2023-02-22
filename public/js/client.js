@@ -285,7 +285,7 @@ function isPlayerInBounds(player) {
     return true;
 }
 
-function setPlayerPosition(playerIconsArray, player) {
+function getNewPosition(player) {
 
     const POS_DELTA = 4;
 
@@ -311,11 +311,20 @@ function setPlayerPosition(playerIconsArray, player) {
             break;
     }
 
+    return newPosition;
+}
+
+function setPlayerPosition(playerIconsArray, player) {
+
     for (let i = playerIconsArray.length - 1; i > 0; i--) {
+
         let x = playerIconsArray[i - 1].x;
         let y = playerIconsArray[i - 1].y;
+        
         playerIconsArray[i].setPosition(x, y);
     }
+
+    let newPosition = getNewPosition(player);
 
     player.setPosition(newPosition.x, newPosition.y);
 }
