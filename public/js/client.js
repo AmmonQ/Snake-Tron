@@ -111,6 +111,19 @@ function addOtherPlayers(self, playerInfo) {
 function addPlayer(self, playerInfo) {
 
     self.playerIconsArray = [addImage(self, playerInfo.position, 'playerIcon')];
+
+    for (let i = 0; i < 16; i++) {
+
+        let position = playerInfo.position;
+
+        let newPosition = {
+            x: position.x + (i * 4),
+            y: position.y
+        };
+
+        self.playerIconsArray.push(addImage(self, newPosition, 'playerIcon'));
+    }
+
     setPlayerColor(self.playerIconsArray, playerInfo);
 }
 
@@ -272,26 +285,39 @@ function isPlayerInBounds(player) {
     return true;
 }
 
-function setPlayerPosition(player) {
+function setPlayerPosition(playerIconsArray, player) {
 
     const POS_DELTA = 4;
 
+    let newPosition = {
+        x: player.x,
+        y: player.y
+    };
+
     switch (player.direction) {
         case Directions.LEFT:
-            player.setPosition(player.x - POS_DELTA, player.y);
+            newPosition.x -= POS_DELTA;
             break;
         case Directions.RIGHT:
-            player.setPosition(player.x + POS_DELTA, player.y);
+            newPosition.x += POS_DELTA;
             break;
         case Directions.UP:
-            player.setPosition(player.x, player.y - POS_DELTA);
+            newPosition.y -= POS_DELTA;
             break;
         case Directions.DOWN:
-            player.setPosition(player.x, player.y + POS_DELTA);
+            newPosition.y += POS_DELTA
             break;
         default:
             break;
     }
+
+    for (let i = playerIconsArray.length - 1; i > 0; i--) {
+        let x = playerIconsArray[i - 1].x;
+        let y = playerIconsArray[i - 1].y;
+        playerIconsArray[i].setPosition(x, y);
+    }
+
+    player.setPosition(newPosition.x, newPosition.y);
 }
 
 function addPlayerIcon(self, playerIconsArray) {
@@ -307,13 +333,10 @@ function addPlayerIcon(self, playerIconsArray) {
 
     //TODO: set x/y based on last grid position
 
-
     let position = {x: 0, y: 0};
     position.x = x;
     position.y = y;
     playerIconsArray.push(addImage(self, position, 'playerIcon'));
-
-
 
     appleCollected = false;
 }
@@ -336,7 +359,7 @@ function update() {
         // set direction and position
         setPlayerNextDirection(this);
         setPlayerDirection(this, this.playerIconsArray);
-        setPlayerPosition(player);
+        setPlayerPosition(this.playerIconsArray, player);
 
         // emit player movement
         let x = player.x;
