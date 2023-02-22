@@ -1,25 +1,13 @@
-let constantsJS = require('../shared/constants.js');
+const BLUE = 0x0000FF;
+const RED = 0xFF0000;
+const BG_COLOR_STR = '#009C29';
+const BORDER_SIZE = 32;
 
-// const BLUE = 0x0000FF;
-// const RED = 0xFF0000;
-// const BG_COLOR_STR = '#009C29';
-// const BORDER_SIZE = 32;
-//
-// const ROW_COL_SIZE = 32;
-// const NUM_ROWS = 20;
-// const NUM_COLS = 30;
-// const WIDTH = ROW_COL_SIZE * NUM_COLS + BORDER_SIZE * 2;
-// const HEIGHT = ROW_COL_SIZE * NUM_ROWS + BORDER_SIZE * 2;
-
-const BLUE = constantsJS.Constants.BLUE;
-const RED = constantsJS.Constants.RED;
-const BG_COLOR_STR = constantsJS.Constants.BG_COLOR_STR;
-const BORDER_SIZE = constantsJS.Constants.BORDER_SIZE;
-const ROW_COL_SIZE = constantsJS.Constants.ROW_COL_SIZE;
-const NUM_ROWS = constantsJS.Constants.NUM_ROWS;
-const NUM_COLS = constantsJS.Constants.NUM_COLS;
-const WIDTH = constantsJS.Constants.WIDTH;
-const HEIGHT = constantsJS.Constants.HEIGHT;
+const ROW_COL_SIZE = 32;
+const NUM_ROWS = 20;
+const NUM_COLS = 30;
+const WIDTH = ROW_COL_SIZE * NUM_COLS + BORDER_SIZE * 2;
+const HEIGHT = ROW_COL_SIZE * NUM_ROWS + BORDER_SIZE * 2;
 
 const Directions = {
 	LEFT: 'left',
@@ -47,6 +35,8 @@ let config = {
         update: update
     }
 };
+
+let appleCollected = false;
 
 let game = new Phaser.Game(config);
 
@@ -88,12 +78,14 @@ function drawBoard(graphics) {
 
 function preload() {
 
-    this.load.image('background', 'assets/grass.png');
-    this.load.image('player', 'assets/pink_snake_tongue_pixel.png');
-    this.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
-    this.load.image('apple', 'assets/apple.png');
+    let self = this;
 
-    drawBoard(this.add.graphics());
+    self.load.image('background', 'assets/grass.png');
+    self.load.image('playerIcon', 'assets/pink_snake_tongue_pixel.png');
+    self.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
+    self.load.image('apple', 'assets/apple.png');
+
+    drawBoard(self.add.graphics());
 }
 
 function initScoreText(self) {
@@ -118,10 +110,33 @@ function addOtherPlayers(self, playerInfo) {
     self.otherPlayers.add(otherPlayer);
 }
 
+function addSegment(self) {
+
+    let direction = self.playerIconsArray[0].direction;
+
+    for (let i = 0; i < 8; i++) {
+
+        let position = self.playerIconsArray[self.playerIconsArray.length - 1];
+
+        let newPosition = {
+            x: position.x + (i * 4),
+            y: position.y
+        };
+
+        self.playerIconsArray.push(addImage(self, newPosition, 'playerIcon'));
+    }
+}
+
 function addPlayer(self, playerInfo) {
 
-    self.player = addImage(self, playerInfo.position, 'player');
-    setPlayerColor(self.player, playerInfo);
+    self.playerIconsArray = [];
+
+    self.playerIconsArray.push(addImage(self, playerInfo.position, 'apple'));
+    addSegment(self);
+    self.playerIconsArray[0].destroy();
+    self.playerIconsArray[0] = addImage(self, playerInfo.position, 'apple');
+
+    setPlayerColor(self.playerIconsArray, playerInfo);
 }
 
 function addPlayers(self, players) {
@@ -185,47 +200,49 @@ function updateApple(self, appleLocation) {
 
     self.apple = addImage(self, appleLocation, 'apple');
 
-    self.physics.add.overlap(self.player, self.apple, function () {
+    self.physics.add.overlap(self.playerIconsArray, self.apple, function () {
 
-        if (!isSamePosition(self.player, self.apple)) {
+        if (!isSamePosition(self.playerIconsArray[0], self.apple)) {
             return;
         }
 
-        this.socket.emit('appleCollected');
+        appleCollected = true;
+
+        self.socket.emit('appleCollected');
     }, null, self);
 }
 
 function create() {
 
     let self = this;
-    this.socket = io();
+    self.socket = io();
 
-    this.otherPlayers = this.physics.add.group();
-    this.cursors = this.input.keyboard.createCursorKeys();
+    self.otherPlayers = self.physics.add.group();
+    self.cursors = self.input.keyboard.createCursorKeys();
 
     initScoreText(self);
 
-    this.socket.on('currentPlayers', function (players) {
+    self.socket.on('currentPlayers', function (players) {
         addPlayers(self, players);
     });
 
-    this.socket.on('newPlayer', function (playerInfo) {
+    self.socket.on('newPlayer', function (playerInfo) {
         addOtherPlayers(self, playerInfo);
     });
 
-    this.socket.on('disconnected', function (playerId) {
+    self.socket.on('disconnected', function (playerId) {
         disconnect(self, playerId);
     });
 
-    this.socket.on('playerMoved', function (playerInfo) {
+    self.socket.on('playerMoved', function (playerInfo) {
         movePlayer(self, playerInfo);
     });
 
-    this.socket.on('scoreUpdate', function (scores) {
+    self.socket.on('scoreUpdate', function (scores) {
         updateScores(self, scores);
     });
 
-    this.socket.on('appleLocation', function (appleLocation) {
+    self.socket.on('appleLocation', function (appleLocation) {
         updateApple(self, appleLocation);
     });
 }
@@ -239,14 +256,14 @@ function setPlayerColor(player, playerInfo) {
 // Client gets input and passes it up to server
 function setPlayerNextDirection(self) {
 
-    if (self.cursors.left.isDown && self.player.direction !== Directions.RIGHT) {
-        self.player.nextDirection = Directions.LEFT;
-    } else if (self.cursors.right.isDown && self.player.direction !== Directions.LEFT) {
-        self.player.nextDirection = Directions.RIGHT;
-    } else if (self.cursors.up.isDown && self.player.direction !== Directions.DOWN) {
-        self.player.nextDirection = Directions.UP;
-    } else if (self.cursors.down.isDown && self.player.direction !== Directions.UP) {
-        self.player.nextDirection = Directions.DOWN;
+    if (self.cursors.left.isDown && self.playerIconsArray[0].direction !== Directions.RIGHT) {
+        self.playerIconsArray[0].nextDirection = Directions.LEFT;
+    } else if (self.cursors.right.isDown && self.playerIconsArray[0].direction !== Directions.LEFT) {
+        self.playerIconsArray[0].nextDirection = Directions.RIGHT;
+    } else if (self.cursors.up.isDown && self.playerIconsArray[0].direction !== Directions.DOWN) {
+        self.playerIconsArray[0].nextDirection = Directions.UP;
+    } else if (self.cursors.down.isDown && self.playerIconsArray[0].direction !== Directions.UP) {
+        self.playerIconsArray[0].nextDirection = Directions.DOWN;
     }
 }
 
@@ -259,11 +276,15 @@ function areCoordinatesAligned(player) {
     return (isCoordinateAligned(player.x) && isCoordinateAligned(player.y));
 }
 
-function setPlayerDirection(player) {
+function setPlayerDirection(self, playerIconsArray) {
+
+    let player = playerIconsArray[0];
 
     if (!areCoordinatesAligned(player)) {
         return;
     }
+
+    addPlayerIcon(self, playerIconsArray);
 
     player.direction = player.nextDirection;
 }
@@ -282,54 +303,100 @@ function isPlayerInBounds(player) {
 
     return true;
 }
-// TODO: Should be in Server
-function setPlayerPosition(player) {
+function getNewPosition(player) {
 
     const POS_DELTA = 4;
 
+    let newPosition = {
+        x: player.x,
+        y: player.y
+    };
+
     switch (player.direction) {
         case Directions.LEFT:
-            player.setPosition(player.x - POS_DELTA, player.y);
+            newPosition.x -= POS_DELTA;
             break;
         case Directions.RIGHT:
-            player.setPosition(player.x + POS_DELTA, player.y);
+            newPosition.x += POS_DELTA;
             break;
         case Directions.UP:
-            player.setPosition(player.x, player.y - POS_DELTA);
+            newPosition.y -= POS_DELTA;
             break;
         case Directions.DOWN:
-            player.setPosition(player.x, player.y + POS_DELTA);
+            newPosition.y += POS_DELTA
             break;
         default:
             break;
     }
+
+    return newPosition;
 }
 
-// this handles the movement of the snake
+function setPlayerPosition(playerIconsArray, player) {
+
+    for (let i = playerIconsArray.length - 1; i > 0; i--) {
+
+        let x = playerIconsArray[i - 1].x;
+        let y = playerIconsArray[i - 1].y;
+        
+        playerIconsArray[i].setPosition(x, y);
+    }
+
+    let newPosition = getNewPosition(player);
+
+    player.setPosition(newPosition.x, newPosition.y);
+}
+
+function addPlayerIcon(self, playerIconsArray) {
+
+    if (!appleCollected) {
+        return;
+    }
+
+    let headIcon = playerIconsArray[0];
+
+
+    let position = {
+        x: headIcon.x,
+        y: headIcon.y
+    };
+
+    addSegment(self);
+    // playerIconsArray.push(addImage(self, position, 'playerIcon'));
+
+    appleCollected = false;
+}
+
+// update() handles the movement of the snake
 // so the snake is always moving and only changes
 // direction
 function update() {
 
-    if (this.player) {
-        let player = this.player;
+    let self = this;
+
+    if (self.playerIconsArray) {
+        let player = self.playerIconsArray[0];
 
         if (!isPlayerInBounds(player)) {
             console.log("out of bounds");
-            this.player.destroy();
-            this.socket.emit("playerDied");
+            for (let i = 0; i < self.playerIconsArray.length; i++) {
+                self.playerIconsArray[i].destroy();
+            }
+            self.playerIconsArray.length = 0;
+            self.socket.emit("playerDied");
             return;
         }
 
         // set direction and position
-        setPlayerNextDirection(this);
-        setPlayerDirection(player);
-        setPlayerPosition(player);
+        setPlayerNextDirection(self);
+        setPlayerDirection(self, self.playerIconsArray);
+        setPlayerPosition(self.playerIconsArray, player);
 
         // emit player movement
         let x = player.x;
         let y = player.y;
         if (player.oldPosition && (x !== player.oldPosition.x || y !== player.oldPosition.y)) {
-            this.socket.emit('playerMovement', { x: player.x, y: player.y });
+            self.socket.emit('playerMovement', { x: player.x, y: player.y });
         }
 
         // save old position data
