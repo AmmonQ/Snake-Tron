@@ -78,12 +78,14 @@ function drawBoard(graphics) {
 
 function preload() {
 
-    this.load.image('background', 'assets/grass.png');
-    this.load.image('playerIcon', 'assets/pink_snake_tongue_pixel.png');
-    this.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
-    this.load.image('apple', 'assets/apple.png');
+    let self = this;
 
-    drawBoard(this.add.graphics());
+    self.load.image('background', 'assets/grass.png');
+    self.load.image('playerIcon', 'assets/pink_snake_tongue_pixel.png');
+    self.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
+    self.load.image('apple', 'assets/apple.png');
+
+    drawBoard(self.add.graphics());
 }
 
 function initScoreText(self) {
@@ -108,13 +110,13 @@ function addOtherPlayers(self, playerInfo) {
     self.otherPlayers.add(otherPlayer);
 }
 
-function addPlayer(self, playerInfo) {
+function addSegment(self) {
 
-    self.playerIconsArray = [addImage(self, playerInfo.position, 'playerIcon')];
+    let direction = self.playerIconsArray[0].direction;
 
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 8; i++) {
 
-        let position = playerInfo.position;
+        let position = self.playerIconsArray[self.playerIconsArray.length - 1];
 
         let newPosition = {
             x: position.x + (i * 4),
@@ -123,6 +125,16 @@ function addPlayer(self, playerInfo) {
 
         self.playerIconsArray.push(addImage(self, newPosition, 'playerIcon'));
     }
+}
+
+function addPlayer(self, playerInfo) {
+
+    self.playerIconsArray = [];
+
+    self.playerIconsArray.push(addImage(self, playerInfo.position, 'apple'));
+    addSegment(self);
+    self.playerIconsArray[0].destroy();
+    self.playerIconsArray[0] = addImage(self, playerInfo.position, 'apple');
 
     setPlayerColor(self.playerIconsArray, playerInfo);
 }
@@ -193,41 +205,41 @@ function updateApple(self, appleLocation) {
 
         appleCollected = true;
 
-        this.socket.emit('appleCollected');
+        self.socket.emit('appleCollected');
     }, null, self);
 }
 
 function create() {
 
     let self = this;
-    this.socket = io();
+    self.socket = io();
 
-    this.otherPlayers = this.physics.add.group();
-    this.cursors = this.input.keyboard.createCursorKeys();
+    self.otherPlayers = self.physics.add.group();
+    self.cursors = self.input.keyboard.createCursorKeys();
 
     initScoreText(self);
 
-    this.socket.on('currentPlayers', function (players) {
+    self.socket.on('currentPlayers', function (players) {
         addPlayers(self, players);
     });
 
-    this.socket.on('newPlayer', function (playerInfo) {
+    self.socket.on('newPlayer', function (playerInfo) {
         addOtherPlayers(self, playerInfo);
     });
 
-    this.socket.on('disconnected', function (playerId) {
+    self.socket.on('disconnected', function (playerId) {
         disconnect(self, playerId);
     });
 
-    this.socket.on('playerMoved', function (playerInfo) {
+    self.socket.on('playerMoved', function (playerInfo) {
         movePlayer(self, playerInfo);
     });
 
-    this.socket.on('scoreUpdate', function (scores) {
+    self.socket.on('scoreUpdate', function (scores) {
         updateScores(self, scores);
     });
 
-    this.socket.on('appleLocation', function (appleLocation) {
+    self.socket.on('appleLocation', function (appleLocation) {
         updateApple(self, appleLocation);
     });
 }
@@ -337,44 +349,48 @@ function addPlayerIcon(self, playerIconsArray) {
 
     let headIcon = playerIconsArray[0];
 
-    let x = headIcon.x;
-    let y = headIcon.y;
 
-    //TODO: set x/y based on last grid position
+    let position = {
+        x: headIcon.x,
+        y: headIcon.y
+    };
 
-    let position = {x: 0, y: 0};
-    position.x = x;
-    position.y = y;
-    playerIconsArray.push(addImage(self, position, 'playerIcon'));
+    addSegment(self);
+    // playerIconsArray.push(addImage(self, position, 'playerIcon'));
 
     appleCollected = false;
 }
 
-// this handles the movement of the snake
+// update() handles the movement of the snake
 // so the snake is always moving and only changes
 // direction
 function update() {
 
-    if (this.playerIconsArray) {
-        let player = this.playerIconsArray[0];
+    let self = this;
+
+    if (self.playerIconsArray) {
+        let player = self.playerIconsArray[0];
 
         if (!isPlayerInBounds(player)) {
             console.log("out of bounds");
-            this.playerIconsArray[0].destroy();
-            this.socket.emit("playerDied");
+            for (let i = 0; i < self.playerIconsArray.length; i++) {
+                self.playerIconsArray[i].destroy();
+            }
+            self.playerIconsArray.length = 0;
+            self.socket.emit("playerDied");
             return;
         }
 
         // set direction and position
-        setPlayerNextDirection(this);
-        setPlayerDirection(this, this.playerIconsArray);
-        setPlayerPosition(this.playerIconsArray, player);
+        setPlayerNextDirection(self);
+        setPlayerDirection(self, self.playerIconsArray);
+        setPlayerPosition(self.playerIconsArray, player);
 
         // emit player movement
         let x = player.x;
         let y = player.y;
         if (player.oldPosition && (x !== player.oldPosition.x || y !== player.oldPosition.y)) {
-            this.socket.emit('playerMovement', { x: player.x, y: player.y });
+            self.socket.emit('playerMovement', { x: player.x, y: player.y });
         }
 
         // save old position data
