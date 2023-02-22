@@ -3,9 +3,13 @@ let app = express();
 let server = require('http').Server(app);
 let io = require('socket.io') (server);
 
-let coordinateJS = require('./public/js/model/coordinate.js');
-let appleJS = require('./public/js/model/apple.js');
-let playerJS = require('./public/js/model/player.js');
+// let coordinateJS = require('./public/js/model/coordinate.js');
+// let appleJS = require('./public/js/model/apple.js');
+// let playerJS = require('./public/js/model/player.js');
+
+let coordinateJS = require('./shared/coordinate.js');
+let appleJS = require('./shared/apple.js');
+let playerJS = require('./shared/player.js');
 
 const NUM_TEAMS = 2;
 const TEAM_COLORS = ['blue', 'red'];
@@ -104,6 +108,7 @@ server.listen(8081, function () {
     console.log(`Listening on ${server.address().port}`);
 });
 
+// This is what the server should do, make decisions and send information about the decision to clients
 function setAppleCoordinates() {
     apple.setPosition(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
 }

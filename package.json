@@ -4,7 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "ci": "browserify public/js/client.js shared/constants.js -o client/bundle.js"
   },
   "keywords": [],
   "author": "",
