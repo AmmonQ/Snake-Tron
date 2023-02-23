@@ -1,60 +1,60 @@
 name: CI/CD Tasks
 on: [push]
 jobs:
-  paths-filter:
-    runs-on: ubuntu-latest
-    outputs:
-      client: ${{ steps.filter.outputs.client }}
-      shared: ${{ steps.filter.outputs.shared }}
-    steps:
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            client:
-            - 'client/**'
-            shared:
-            - 'shared/**'
+#   paths-filter:
+#     runs-on: ubuntu-latest
+#     outputs:
+#       client: ${{ steps.filter.outputs.client }}
+#       shared: ${{ steps.filter.outputs.shared }}
+#     steps:
+#       - uses: dorny/paths-filter@v2
+#         id: filter
+#         with:
+#           filters: |
+#             client:
+#             - 'client/**'
+#             shared:
+#             - 'shared/**'
 
-  Run-Browserify:
-    runs-on: ubuntu-latest
-    needs: paths-filter
-    if: ${{ needs.paths-filter.outputs.client == 'true' || needs.paths-filter.outputs.shared == 'true' }}
-    steps:
-      - uses: actions/checkout@v2
+#   Run-Browserify:
+#     runs-on: ubuntu-latest
+#     needs: paths-filter
+#     if: ${{ needs.paths-filter.outputs.client == 'true' || needs.paths-filter.outputs.shared == 'true' }}
+#     steps:
+#       - uses: actions/checkout@v2
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v1
-        with:
-          node-version: '18.x'
+#       - name: Set up Node.js version
+#         uses: actions/setup-node@v1
+#         with:
+#           node-version: '18.x'
 
-      - name: npm install
-        run: npm install
-      - name: Install Browserify
-        run: npm install -g browserify
-      - name: Run Browserify
-        run: browserify client/client.js shared/constants.js -o public/js/bundle.js
+#       - name: npm install
+#         run: npm install
+#       - name: Install Browserify
+#         run: npm install -g browserify
+#       - name: Run Browserify
+#         run: browserify client/client.js shared/constants.js -o public/js/bundle.js
 
-      - name: setup github account
-        run: |
-          git config --local user.email "aq229@byu.edu"
-          git config --local user.name "AmmonQ"
-      - name: check for changes
-        run: git status
-      - name: stage changed file
-        run: git add .
-      - name: commit code
-        run: git commit -m "auto update bundle.js on $(date)"
+#       - name: setup github account
+#         run: |
+#           git config --local user.email "aq229@byu.edu"
+#           git config --local user.name "AmmonQ"
+#       - name: check for changes
+#         run: git status
+#       - name: stage changed file
+#         run: git add .
+#       - name: commit code
+#         run: git commit -m "auto update bundle.js on $(date)"
 
-      - name: push code
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+#       - name: push code
+#         uses: ad-m/github-push-action@master
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           branch: main
           
   build:
     runs-on: ubuntu-latest
-    needs: Run-Browserify
+#     needs: Run-Browserify
 
     steps:
       - uses: actions/checkout@v2
