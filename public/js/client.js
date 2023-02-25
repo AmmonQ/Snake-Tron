@@ -84,6 +84,14 @@ function preload() {
     self.load.image('playerIcon', 'assets/pink_snake_tongue_pixel.png');
     self.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
     self.load.image('apple', 'assets/apple.png');
+    self.load.image('greenSnakeHead', 'assets/green_snake_head.png')
+    self.load.image('foeSnakeHead', 'assets/foe_snake_head.png')
+    self.load.image('foeSnakeTurn', 'assets/foe_snake_turn.png')
+    self.load.image('foeSnakeTail', 'assets/foe_snake_tail.png')
+    self.load.image('foeSnakeBody', 'assets/foe_snake_body.png')
+    self.load.image('greenSnakeBody', 'assets/green_snake_body.png')
+    self.load.image('greenSnakeTail', 'assets/green_snake_tail.png')
+    self.load.image('greenSnakeTurn', 'assets/green_snake_turn.png')
 
     drawBoard(self.add.graphics());
 }
@@ -123,7 +131,7 @@ function addSegment(self) {
             y: position.y
         };
 
-        self.playerIconsArray.push(addImage(self, newPosition, 'playerIcon'));
+        self.playerIconsArray.push(addImage(self, newPosition, 'greenSnakeBody'));
     }
 }
 
@@ -131,10 +139,10 @@ function addPlayer(self, playerInfo) {
 
     self.playerIconsArray = [];
 
-    self.playerIconsArray.push(addImage(self, playerInfo.position, 'apple'));
+    self.playerIconsArray.push(addImage(self, playerInfo.position, 'greenSnakeTurn'));
     addSegment(self);
     self.playerIconsArray[0].destroy();
-    self.playerIconsArray[0] = addImage(self, playerInfo.position, 'apple');
+    self.playerIconsArray[0] = addImage(self, playerInfo.position, 'greenSnakeTurn');
 
     setPlayerColor(self.playerIconsArray, playerInfo);
 }
