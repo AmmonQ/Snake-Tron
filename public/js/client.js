@@ -118,18 +118,41 @@ function addOtherPlayers(self, playerInfo) {
     self.otherPlayers.add(otherPlayer);
 }
 
-function addSegment(self) {
+function getNewPosition(position, index) {
 
-    let direction = self.playerIconsArray[0].direction;
+    let newX = position.x;
+    let newY = position.y;
+
+    let movDelta = index * 4;
+
+    switch (position.direction) {
+        case Directions.LEFT:
+            newX += movDelta;
+            break;
+        case Directions.RIGHT:
+            newX -= movDelta;
+            break;
+        case Directions.UP:
+            newY -= movDelta;
+            break;
+        case Directions.DOWN:
+            newY += movDelta;
+            break;
+    }
+
+    return {
+        x: newX,
+        y: newY
+    };
+}
+
+function addSegment(self) {
 
     for (let i = 0; i < 8; i++) {
 
         let position = self.playerIconsArray[self.playerIconsArray.length - 1];
 
-        let newPosition = {
-            x: position.x + (i * 4),
-            y: position.y
-        };
+        let newPosition = getNewPosition(position, i);
 
         self.playerIconsArray.push(addImage(self, newPosition, 'greenSnakeBody'));
     }
@@ -292,7 +315,7 @@ function setPlayerDirection(self, playerIconsArray) {
         return;
     }
 
-    addPlayerIcon(self, playerIconsArray);
+    addPlayerIcon(self);
 
     player.direction = player.nextDirection;
 }
@@ -355,22 +378,13 @@ function setPlayerPosition(playerIconsArray, player) {
     player.setPosition(newPosition.x, newPosition.y);
 }
 
-function addPlayerIcon(self, playerIconsArray) {
+function addPlayerIcon(self) {
 
     if (!appleCollected) {
         return;
     }
 
-    let headIcon = playerIconsArray[0];
-
-
-    let position = {
-        x: headIcon.x,
-        y: headIcon.y
-    };
-
     addSegment(self);
-    // playerIconsArray.push(addImage(self, position, 'playerIcon'));
 
     appleCollected = false;
 }
