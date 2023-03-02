@@ -148,7 +148,9 @@ function getNewPosition(position, index) {
 
 function addSegment(self) {
 
-    for (let i = 0; i < 8; i++) {
+    const NUM_ICONS_PER_SEGMENTS = 8;
+
+    for (let i = 0; i < NUM_ICONS_PER_SEGMENTS; i++) {
 
         let position = self.playerIconsArray[self.playerIconsArray.length - 1];
 
@@ -162,10 +164,10 @@ function addPlayer(self, playerInfo) {
 
     self.playerIconsArray = [];
 
-    self.playerIconsArray.push(addImage(self, playerInfo.position, 'greenSnakeTurn'));
+    self.playerIconsArray.push(addImage(self, playerInfo.position, 'greenSnakeBody'));
     addSegment(self);
     self.playerIconsArray[0].destroy();
-    self.playerIconsArray[0] = addImage(self, playerInfo.position, 'greenSnakeTurn');
+    self.playerIconsArray[0] = addImage(self, playerInfo.position, 'greenSnakeHead');
 
     setPlayerColor(self.playerIconsArray, playerInfo);
 }
@@ -302,6 +304,7 @@ function setPlayerNextDirection(self) {
 function isCoordinateAligned(coordinate) {
     return ((coordinate % ROW_COL_SIZE) === 0);
 }
+
 // TODO: Should be in Server
 function areCoordinatesAligned(player) {
     return (isCoordinateAligned(player.x) && isCoordinateAligned(player.y));
