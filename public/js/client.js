@@ -6,8 +6,11 @@ const BORDER_SIZE = 32;
 const ROW_COL_SIZE = 32;
 const NUM_ROWS = 20;
 const NUM_COLS = 30;
-const WIDTH = ROW_COL_SIZE * NUM_COLS + BORDER_SIZE * 2;
-const HEIGHT = ROW_COL_SIZE * NUM_ROWS + BORDER_SIZE * 2;
+// const getWidth = ROW_COL_SIZE * NUM_COLS + BORDER_SIZE * 2;
+// const getHeight = ROW_COL_SIZE * NUM_ROWS + BORDER_SIZE * 2;
+
+import {Presenter} from './presenter.js'
+let presenter = new Presenter();
 
 const Directions = {
 	LEFT: 'left',
@@ -19,8 +22,8 @@ const Directions = {
 let config = {
     type: Phaser.AUTO,
     parent: 'phaser-example',
-    width: WIDTH,
-    height: HEIGHT,
+    width: presenter.getWidth(),
+    height: presenter.getHeight(),
     backgroundColor: BG_COLOR_STR,
     physics: {
         default: 'arcade',
@@ -46,10 +49,10 @@ function drawBorder(graphics, alpha) {
 
     graphics.fillStyle(BORDER_COLOR, alpha);
 
-    graphics.fillRect(0, 0, WIDTH, BORDER_SIZE);
-    graphics.fillRect(0, 0, BORDER_SIZE, HEIGHT);
-    graphics.fillRect(WIDTH - BORDER_SIZE, 0, BORDER_SIZE, HEIGHT);
-    graphics.fillRect(0, HEIGHT - BORDER_SIZE, WIDTH, BORDER_SIZE);
+    graphics.fillRect(0, 0, presenter.getWidth(), BORDER_SIZE);
+    graphics.fillRect(0, 0, BORDER_SIZE, presenter.getHeight());
+    graphics.fillRect(presenter.getWidth() - BORDER_SIZE, 0, BORDER_SIZE, presenter.getHeight());
+    graphics.fillRect(0, presenter.getHeight() - BORDER_SIZE, presenter.getWidth(), BORDER_SIZE);
 }
 
 // draw checkerboard for game
@@ -62,8 +65,8 @@ function drawBoard(graphics) {
 
     let previous = false;
 
-    for (let col = BORDER_SIZE; col < HEIGHT - BORDER_SIZE; col += ROW_COL_SIZE) {
-        for (let row = BORDER_SIZE; row < WIDTH - BORDER_SIZE; row += ROW_COL_SIZE) {
+    for (let col = BORDER_SIZE; col < presenter.getHeight() - BORDER_SIZE; col += ROW_COL_SIZE) {
+        for (let row = BORDER_SIZE; row < presenter.getWidth() - BORDER_SIZE; row += ROW_COL_SIZE) {
             if (!previous) {
                 graphics.fillRect(row, col, ROW_COL_SIZE, ROW_COL_SIZE);
             }
@@ -118,7 +121,7 @@ function addOtherPlayers(self, playerInfo) {
     self.otherPlayers.add(otherPlayer);
 }
 
-function getNewPosition(position, index) {
+function getSegmentNewPosition(position, index) {
 
     let newX = position.x;
     let newY = position.y;
@@ -154,7 +157,7 @@ function addSegment(self) {
 
         let position = self.playerIconsArray[self.playerIconsArray.length - 1];
 
-        let newPosition = getNewPosition(position, i);
+        let newPosition = getSegmentNewPosition(position, i);
 
         self.playerIconsArray.push(addImage(self, newPosition, 'greenSnakeBody'));
     }
@@ -327,11 +330,11 @@ function isPlayerInBounds(player) {
 
     if (player.x < BORDER_SIZE) {
         return false;
-    } else if (player.x > (WIDTH - BORDER_SIZE * 2)) {
+    } else if (player.x > (presenter.getWidth() - BORDER_SIZE * 2)) {
         return false;
     } else if (player.y < BORDER_SIZE) {
         return false;
-    } else if (player.y > (HEIGHT - BORDER_SIZE * 2)) {
+    } else if (player.y > (presenter.getWidth() - BORDER_SIZE * 2)) {
         return false;
     }
 
