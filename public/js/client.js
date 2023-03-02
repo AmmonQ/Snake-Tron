@@ -2,16 +2,6 @@ import {Presenter} from './presenter.js'
 
 let presenter = new Presenter();
 
-
-console.log("")
-
-const Directions = {
-	LEFT: 'left',
-	RIGHT: 'right',
-	UP: 'up',
-	DOWN: 'down'
-};
-
 let config = {
     type: Phaser.AUTO,
     parent: 'phaser-example',
@@ -36,7 +26,6 @@ let appleCollected = false;
 
 let game = new Phaser.Game(config);
 let graphics;
-
 
 function drawRect(x1, y1, x2, y2, color, alpha) {
     graphics.fillStyle(color, alpha);
@@ -94,16 +83,16 @@ function getSegmentNewPosition(position, index) {
     let movDelta = index * 4;
 
     switch (position.direction) {
-        case Directions.LEFT:
+        case Presenter.Directions.LEFT:
             newX += movDelta;
             break;
-        case Directions.RIGHT:
+        case Presenter.Directions.RIGHT:
             newX -= movDelta;
             break;
-        case Directions.UP:
+        case Presenter.Directions.UP:
             newY -= movDelta;
             break;
-        case Directions.DOWN:
+        case Presenter.Directions.DOWN:
             newY += movDelta;
             break;
     }
@@ -175,18 +164,6 @@ function updateScores(self, scores) {
     self.redScoreText.setText('Red: ' + scores.red);
 }
 
-// TODO: Should be in Server
-function isSamePosition(player, apple) {
-
-    let playerRow = player.y / presenter.getTileDiameter();
-    let playerCol = player.x / presenter.getTileDiameter();
-
-    let appleRow = apple.y / presenter.getTileDiameter();
-    let appleCol = apple.x / presenter.getTileDiameter();
-
-    return ((playerRow === appleRow) && (playerCol === appleCol));
-}
-
 function addImage(self, position, image) {
     return self.physics.add.image(position.x, position.y, image).setOrigin(0.0, 0.0);
 }
@@ -202,7 +179,7 @@ function updateApple(self, appleLocation) {
 
     self.physics.add.overlap(self.playerIconsArray, self.apple, function () {
 
-        if (!isSamePosition(self.playerIconsArray[0], self.apple)) {
+        if (!presenter.isSamePosition(self.playerIconsArray[0], self.apple)) {
             return;
         }
 
@@ -253,20 +230,6 @@ function setPlayerColor(player, playerInfo) {
     player.setTint(playerInfo.team === 'blue' ? presenter.getBlue() : presenter.getRed());
 }
 
-// Client gets input and passes it up to server
-function setPlayerNextDirection(self) {
-
-    if (self.cursors.left.isDown && self.playerIconsArray[0].direction !== Directions.RIGHT) {
-        self.playerIconsArray[0].nextDirection = Directions.LEFT;
-    } else if (self.cursors.right.isDown && self.playerIconsArray[0].direction !== Directions.LEFT) {
-        self.playerIconsArray[0].nextDirection = Directions.RIGHT;
-    } else if (self.cursors.up.isDown && self.playerIconsArray[0].direction !== Directions.DOWN) {
-        self.playerIconsArray[0].nextDirection = Directions.UP;
-    } else if (self.cursors.down.isDown && self.playerIconsArray[0].direction !== Directions.UP) {
-        self.playerIconsArray[0].nextDirection = Directions.DOWN;
-    }
-}
-
 // TODO: Should be in Server
 function isCoordinateAligned(coordinate) {
     return ((coordinate % presenter.getTileDiameter()) === 0);
@@ -314,16 +277,16 @@ function getNewPosition(player) {
     };
 
     switch (player.direction) {
-        case Directions.LEFT:
+        case Presenter.Directions.LEFT:
             newPosition.x -= POS_DELTA;
             break;
-        case Directions.RIGHT:
+        case Presenter.Directions.RIGHT:
             newPosition.x += POS_DELTA;
             break;
-        case Directions.UP:
+        case Presenter.Directions.UP:
             newPosition.y -= POS_DELTA;
             break;
-        case Directions.DOWN:
+        case Presenter.Directions.DOWN:
             newPosition.y += POS_DELTA
             break;
         default:
@@ -381,7 +344,7 @@ function update() {
         }
 
         // set direction and position
-        setPlayerNextDirection(self);
+        self.playerIconsArray[0].nextDirection = presenter.getPlayerNextDirection(self.cursors, self.playerIconsArray[0].direction);
         setPlayerDirection(self, self.playerIconsArray);
         setPlayerPosition(self.playerIconsArray, player);
 

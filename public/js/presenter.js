@@ -1,5 +1,12 @@
 export class Presenter {
 
+    static Directions = {
+        LEFT: 'left',
+        RIGHT: 'right',
+        UP: 'up',
+        DOWN: 'down'
+    };
+
     constructor() {
 
         this.BLUE = 0x0000FF;
@@ -41,6 +48,7 @@ export class Presenter {
     getTileDiameter() {
         return this.TILE_DIAMETER;
     }
+
     drawBorder(funcDrawRect, ALPHA) {
 
         const BORDER_COLOR = 0x004C29;
@@ -69,5 +77,31 @@ export class Presenter {
         }
 
         this.drawBorder(funcDrawRect, ALPHA);
+    }
+
+    isSamePosition(player, apple) {
+
+        let playerRow = player.y / this.getTileDiameter();
+        let playerCol = player.x / this.getTileDiameter();
+
+        let appleRow = apple.y / this.getTileDiameter();
+        let appleCol = apple.x / this.getTileDiameter();
+
+        return ((playerRow === appleRow) && (playerCol === appleCol));
+    }
+
+    getPlayerNextDirection(cursors, playerDirection) {
+
+        if (cursors.left.isDown && playerDirection !== Presenter.Directions.RIGHT) {
+            return Presenter.Directions.LEFT;
+        } else if (cursors.right.isDown && playerDirection !== Presenter.Directions.LEFT) {
+            return Presenter.Directions.RIGHT;
+        } else if (cursors.up.isDown && playerDirection !== Presenter.Directions.DOWN) {
+            return Presenter.Directions.UP;
+        } else if (cursors.down.isDown && playerDirection !== Presenter.Directions.UP) {
+            return Presenter.Directions.DOWN;
+        } else {
+            return playerDirection;
+        }
     }
 }
