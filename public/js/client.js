@@ -1,5 +1,6 @@
-import {Presenter} from './presenter.js'
-import {Segment} from "./segment.js";
+import { Presenter } from './presenter.js'
+import { Segment } from "./segment.js";
+import { Snake } from "./snake.js"
 
 let presenter = new Presenter();
 
@@ -24,6 +25,7 @@ let config = {
 };
 
 let game = new Phaser.Game(config);
+
 let graphics;
 let physics;
 

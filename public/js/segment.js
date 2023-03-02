@@ -48,6 +48,5 @@ export class Segment {
         }
 
         this.getFirst().setPosition(newPosition.x, newPosition.y);
-
     }
 }
