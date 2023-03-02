@@ -1,16 +1,9 @@
-const BLUE = 0x0000FF;
-const RED = 0xFF0000;
-const BG_COLOR_STR = '#009C29';
-const BORDER_SIZE = 32;
-
-const ROW_COL_SIZE = 32;
-const NUM_ROWS = 20;
-const NUM_COLS = 30;
-// const getWidth = ROW_COL_SIZE * NUM_COLS + BORDER_SIZE * 2;
-// const getHeight = ROW_COL_SIZE * NUM_ROWS + BORDER_SIZE * 2;
-
 import {Presenter} from './presenter.js'
+
 let presenter = new Presenter();
+
+
+console.log("")
 
 const Directions = {
 	LEFT: 'left',
@@ -24,7 +17,7 @@ let config = {
     parent: 'phaser-example',
     width: presenter.getWidth(),
     height: presenter.getHeight(),
-    backgroundColor: BG_COLOR_STR,
+    backgroundColor: presenter.getBgColorStr(),
     physics: {
         default: 'arcade',
         arcade: {
@@ -42,46 +35,18 @@ let config = {
 let appleCollected = false;
 
 let game = new Phaser.Game(config);
+let graphics;
 
-function drawBorder(graphics, alpha) {
 
-    const BORDER_COLOR = 0x004C29;
-
-    graphics.fillStyle(BORDER_COLOR, alpha);
-
-    graphics.fillRect(0, 0, presenter.getWidth(), BORDER_SIZE);
-    graphics.fillRect(0, 0, BORDER_SIZE, presenter.getHeight());
-    graphics.fillRect(presenter.getWidth() - BORDER_SIZE, 0, BORDER_SIZE, presenter.getHeight());
-    graphics.fillRect(0, presenter.getHeight() - BORDER_SIZE, presenter.getWidth(), BORDER_SIZE);
-}
-
-// draw checkerboard for game
-function drawBoard(graphics) {
-
-    const FG_COLOR = 0x008C29;
-    const ALPHA = 1.0;
-
-    graphics.fillStyle(FG_COLOR, ALPHA);
-
-    let previous = false;
-
-    for (let col = BORDER_SIZE; col < presenter.getHeight() - BORDER_SIZE; col += ROW_COL_SIZE) {
-        for (let row = BORDER_SIZE; row < presenter.getWidth() - BORDER_SIZE; row += ROW_COL_SIZE) {
-            if (!previous) {
-                graphics.fillRect(row, col, ROW_COL_SIZE, ROW_COL_SIZE);
-            }
-
-            previous = !previous;
-        }
-        previous = !previous;
-    }
-
-    drawBorder(graphics, ALPHA);
+function drawRect(x1, y1, x2, y2, color, alpha) {
+    graphics.fillStyle(color, alpha);
+    graphics.fillRect(x1, y1, x2, y2);
 }
 
 function preload() {
 
     let self = this;
+    graphics = self.add.graphics();
 
     self.load.image('background', 'assets/grass.png');
     self.load.image('playerIcon', 'assets/pink_snake_tongue_pixel.png');
@@ -96,7 +61,7 @@ function preload() {
     self.load.image('greenSnakeTail', 'assets/green_snake_tail.png')
     self.load.image('greenSnakeTurn', 'assets/green_snake_turn.png')
 
-    drawBoard(self.add.graphics());
+    presenter.drawBoard(drawRect);
 }
 
 function initScoreText(self) {
@@ -187,7 +152,6 @@ function addPlayers(self, players) {
 }
 
 function disconnect(self, playerId) {
-
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
         if (playerId === otherPlayer.id) {
             otherPlayer.destroy();
@@ -214,11 +178,11 @@ function updateScores(self, scores) {
 // TODO: Should be in Server
 function isSamePosition(player, apple) {
 
-    let playerRow = player.y / ROW_COL_SIZE;
-    let playerCol = player.x / ROW_COL_SIZE;
+    let playerRow = player.y / presenter.getTileDiameter();
+    let playerCol = player.x / presenter.getTileDiameter();
 
-    let appleRow = apple.y / ROW_COL_SIZE;
-    let appleCol = apple.x / ROW_COL_SIZE;
+    let appleRow = apple.y / presenter.getTileDiameter();
+    let appleCol = apple.x / presenter.getTileDiameter();
 
     return ((playerRow === appleRow) && (playerCol === appleCol));
 }
@@ -285,8 +249,8 @@ function create() {
 
 // TODO: Should be in Server
 function setPlayerColor(player, playerInfo) {
-    console.log("BLUE: " + BLUE + " RED: " + RED);
-    player.setTint(playerInfo.team === 'blue' ? BLUE : RED);
+    console.log("BLUE: " + presenter.getBlue() + " RED: " + presenter.getRed());
+    player.setTint(playerInfo.team === 'blue' ? presenter.getBlue() : presenter.getRed());
 }
 
 // Client gets input and passes it up to server
@@ -305,7 +269,7 @@ function setPlayerNextDirection(self) {
 
 // TODO: Should be in Server
 function isCoordinateAligned(coordinate) {
-    return ((coordinate % ROW_COL_SIZE) === 0);
+    return ((coordinate % presenter.getTileDiameter()) === 0);
 }
 
 // TODO: Should be in Server
@@ -328,13 +292,13 @@ function setPlayerDirection(self, playerIconsArray) {
 // TODO: Should be in Server
 function isPlayerInBounds(player) {
 
-    if (player.x < BORDER_SIZE) {
+    if (player.x < presenter.getBorderSize()) {
         return false;
-    } else if (player.x > (presenter.getWidth() - BORDER_SIZE * 2)) {
+    } else if (player.x > (presenter.getWidth() - presenter.getBorderSize() * 2)) {
         return false;
-    } else if (player.y < BORDER_SIZE) {
+    } else if (player.y < presenter.getBorderSize()) {
         return false;
-    } else if (player.y > (presenter.getWidth() - BORDER_SIZE * 2)) {
+    } else if (player.y > (presenter.getHeight() - presenter.getBorderSize() * 2)) {
         return false;
     }
 
@@ -403,6 +367,7 @@ function update() {
     let self = this;
 
     if (self.playerIconsArray) {
+
         let player = self.playerIconsArray[0];
 
         if (!isPlayerInBounds(player)) {
