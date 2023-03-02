@@ -5,7 +5,7 @@ export class Snake {
     constructor() {
         this.head;
         this.segments = [];
-        this.direction;
+        this.direction = "left";
         this.nextDirection;
     }
 

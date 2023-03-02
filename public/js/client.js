@@ -28,6 +28,7 @@ let game = new Phaser.Game(config);
 
 let graphics;
 let physics;
+let snake;
 
 function drawRect(x1, y1, x2, y2, color, alpha) {
     graphics.fillStyle(color, alpha);
@@ -39,6 +40,7 @@ function preload() {
     let self = this;
     graphics = self.add.graphics();
     physics = self.physics;
+    snake = new Snake();
 
     self.load.image('background', 'assets/grass.png');
     self.load.image('playerIcon', 'assets/pink_snake_tongue_pixel.png');
@@ -205,7 +207,7 @@ function setPlayerDirection(self, playerSegments) {
 
     addPlayerIcon(self.playerSegments);
 
-    player.direction = player.nextDirection;
+    player.direction = snake.getNextDirection();
 }
 
 function setPlayerPosition(playerSegments, player) {
@@ -258,7 +260,8 @@ function update() {
         }
 
         // set direction and position
-        self.playerSegments[0].getFirst().nextDirection = presenter.getPlayerNextDirection(self.cursors, self.playerSegments[0].getFirst().direction);
+        let nextDir = presenter.getPlayerNextDirection(self.cursors, player.direction);
+        snake.setNextDirection(nextDir);
         setPlayerDirection(self, self.playerSegments);
         setPlayerPosition(self.playerSegments, player);
 
