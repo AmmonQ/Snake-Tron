@@ -1,3 +1,5 @@
+import {Segment} from "./segment.js";
+
 export class Presenter {
 
     static Directions = {
@@ -19,6 +21,10 @@ export class Presenter {
         this.NUM_COLS = 30;
         this.WIDTH = this.TILE_DIAMETER * this.NUM_COLS + this.BORDER_SIZE * 2;
         this.HEIGHT = this.TILE_DIAMETER * this.NUM_ROWS + this.BORDER_SIZE * 2;
+        this.NUM_ICONS_PER_SEGMENTS = 8;
+        this.MOV_DELTA = this.TILE_DIAMETER / this.NUM_ICONS_PER_SEGMENTS;
+
+        this.appleCollected = false;
     }
 
     getWidth() {
@@ -47,6 +53,18 @@ export class Presenter {
 
     getTileDiameter() {
         return this.TILE_DIAMETER;
+    }
+
+    getMovDelta() {
+        return this.MOV_DELTA;
+    }
+
+    isAppleCollected() {
+        return this.appleCollected;
+    }
+
+    setAppleCollected(appleCollected) {
+        this.appleCollected = appleCollected;
     }
 
     drawBorder(funcDrawRect, ALPHA) {
@@ -79,17 +97,6 @@ export class Presenter {
         this.drawBorder(funcDrawRect, ALPHA);
     }
 
-    isSamePosition(player, apple) {
-
-        let playerRow = player.y / this.getTileDiameter();
-        let playerCol = player.x / this.getTileDiameter();
-
-        let appleRow = apple.y / this.getTileDiameter();
-        let appleCol = apple.x / this.getTileDiameter();
-
-        return ((playerRow === appleRow) && (playerCol === appleCol));
-    }
-
     getPlayerNextDirection(cursors, playerDirection) {
 
         if (cursors.left.isDown && playerDirection !== Presenter.Directions.RIGHT) {
@@ -103,5 +110,61 @@ export class Presenter {
         } else {
             return playerDirection;
         }
+    }
+
+    getNewPosition(position, delta) {
+
+        let newX = position.x;
+        let newY = position.y;
+
+        switch (position.direction) {
+            case Presenter.Directions.LEFT:
+                newX -= delta;
+                break;
+            case Presenter.Directions.RIGHT:
+                newX += delta;
+                break;
+            case Presenter.Directions.UP:
+                newY -= delta;
+                break;
+            case Presenter.Directions.DOWN:
+                newY += delta;
+                break;
+        }
+
+        return {
+            x: newX,
+            y: newY
+        };
+    }
+
+    addSegment(playerSegments, lastPosition, funcAddImage, imageType) {
+
+        console.log("Adding segment");
+
+        let segment = new Segment();
+
+        for (let i = 0; i < this.NUM_ICONS_PER_SEGMENTS; i++) {
+
+            let newPosition = this.getNewPosition(lastPosition, i * this.getMovDelta());
+            segment.addIcon(funcAddImage(newPosition, imageType));
+        }
+
+        playerSegments.push(segment);
+    }
+
+    isPlayerInBounds(player) {
+
+        if (player.x < this.getBorderSize()) {
+            return false;
+        } else if (player.x > (this.getWidth() - this.getBorderSize() * 2)) {
+            return false;
+        } else if (player.y < this.getBorderSize()) {
+            return false;
+        } else if (player.y > (this.getHeight() - this.getBorderSize() * 2)) {
+            return false;
+        }
+
+        return true;
     }
 }
