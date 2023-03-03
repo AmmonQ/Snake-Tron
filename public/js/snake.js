@@ -7,6 +7,10 @@ export class Snake {
         this.segments = [];
         this.direction = "left";
         this.nextDirection;
+        this.oldPosition =  {
+            x: -1,
+            y: -1
+        };
     }
 
     getHead() {
@@ -35,5 +39,31 @@ export class Snake {
 
     setNextDirection(nextDirection) {
         this.nextDirection = nextDirection;
+    }
+
+    setOldPosition(x, y) {
+        this.oldPosition.x = x;
+        this.oldPosition.y = y;
+    }
+
+    getOldX() {
+        return this.oldPosition.x;
+    }
+
+    getOldY() {
+        return this.oldPosition.y;
+    }
+
+    move(funcGetNewPos, movDelta) {
+
+        for (let i = this.getSegments().length - 1; i > 0; i--) {
+            this.getSegments()[i].move(this.getSegments()[i - 1].getLast());
+        }
+
+        this.getSegments()[0].move(this.getHead());
+
+        let newPosition = funcGetNewPos(this.getHead(), movDelta);
+
+        this.getHead().setPosition(newPosition.x, newPosition.y);
     }
 }

@@ -140,8 +140,6 @@ export class Presenter {
 
     addSegment(playerSegments, lastPosition, funcAddImage, imageType) {
 
-        console.log("Adding segment");
-
         let segment = new Segment();
 
         for (let i = 0; i < this.NUM_ICONS_PER_SEGMENTS; i++) {
@@ -174,5 +172,16 @@ export class Presenter {
 
     areCoordinatesAligned(position) {
         return (this.isCoordinateAligned(position.x) && this.isCoordinateAligned(position.y));
+    }
+
+    setSnakeDirection(snake, funcAddPlayerIcon) {
+
+        if (!this.areCoordinatesAligned(snake.getHead())) {
+            return;
+        }
+
+        funcAddPlayerIcon(snake.getSegments());
+
+        snake.getHead().direction = snake.getNextDirection();
     }
 }

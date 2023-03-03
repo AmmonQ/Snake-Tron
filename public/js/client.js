@@ -187,32 +187,6 @@ function setPlayerColor(player, playerInfo) {
     player.setTint(playerInfo.team === 'blue' ? presenter.getBlue() : presenter.getRed());
 }
 
-function setPlayerDirection(self, playerSegments) {
-
-    let player = playerSegments[0].getFirst();
-
-    if (!presenter.areCoordinatesAligned(player)) {
-        return;
-    }
-
-    addPlayerIcon(snake.getSegments());
-
-    player.direction = snake.getNextDirection();
-}
-
-function setPlayerPosition(playerSegments, player) {
-
-    for (let i = playerSegments.length - 1; i > 0; i--) {
-        playerSegments[i].move(playerSegments[i - 1].getLast());
-    }
-
-    playerSegments[0].move(snake.getHead());
-
-    let newPosition = presenter.getNewPosition(player, presenter.getMovDelta());
-
-    player.setPosition(newPosition.x, newPosition.y);
-}
-
 function addPlayerIcon(playerSegments) {
 
     if (!presenter.isAppleCollected()) {
@@ -250,20 +224,18 @@ function update() {
         // set direction and position
         let nextDir = presenter.getPlayerNextDirection(cursors, player.direction);
         snake.setNextDirection(nextDir);
-        setPlayerDirection(self, snake.getSegments());
-        setPlayerPosition(snake.getSegments(), player);
+        presenter.setSnakeDirection(snake, addPlayerIcon);
+
+        snake.move(presenter.getNewPosition, presenter.getMovDelta());
 
         // emit player movement
         let x = player.x;
         let y = player.y;
-        if (player.oldPosition && (x !== player.oldPosition.x || y !== player.oldPosition.y)) {
+        if (x !== snake.getOldX() || y !== snake.getOldY()) {
             self.socket.emit('playerMovement', { x: player.x, y: player.y });
         }
 
-        // save old position data
-        player.oldPosition = {
-            x: player.x,
-            y: player.y,
-        };
+        snake.setOldPosition(player.x, player.y);
+
     }
 }
