@@ -10,7 +10,7 @@ export class Snake {
     }
 
     getHead() {
-        return this.head;
+        return this.segments[0].getFirst();
     }
 
     getSegments() {

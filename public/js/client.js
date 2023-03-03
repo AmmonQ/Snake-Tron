@@ -84,11 +84,9 @@ function addPlayer(self, playerInfo) {
 
     console.log("Adding player");
 
-    self.playerSegments = [];
+    presenter.addSegment(snake.getSegments(), playerInfo.position, addImage, 'greenSnakeBody');
 
-    presenter.addSegment(self.playerSegments, playerInfo.position, addImage, 'greenSnakeBody');
-
-    setPlayerColor(self.playerSegments, playerInfo);
+    setPlayerColor(snake.getSegments(), playerInfo);
 }
 
 function addPlayers(self, players) {
@@ -139,7 +137,7 @@ function updateApple(self, appleLocation) {
 
     self.apple = addImage(appleLocation, 'apple');
 
-    physics.add.overlap(self.playerSegments[0].getFirst(), self.apple, function () {
+    physics.add.overlap(snake.getHead(), self.apple, function () {
         presenter.setAppleCollected(true);
 
         self.socket.emit('appleCollected');
@@ -205,7 +203,7 @@ function setPlayerDirection(self, playerSegments) {
         return;
     }
 
-    addPlayerIcon(self.playerSegments);
+    addPlayerIcon(snake.getSegments());
 
     player.direction = snake.getNextDirection();
 }
@@ -216,9 +214,7 @@ function setPlayerPosition(playerSegments, player) {
         playerSegments[i].move(playerSegments[i - 1].getLast());
     }
 
-    // moving the player
-    console.log("moving the player");
-    playerSegments[0].move(playerSegments[0].getFirst());
+    playerSegments[0].move(snake.getHead());
 
     let newPosition = presenter.getNewPosition(player, presenter.getMovDelta());
 
@@ -245,16 +241,16 @@ function update() {
 
     let self = this;
 
-    if (self.playerSegments) {
+    if (snake.getSegments().length > 0) {
 
-        let player = self.playerSegments[0].getFirst();
+        let player = snake.getHead();
 
         if (!presenter.isPlayerInBounds(player)) {
             console.log("out of bounds");
-            for (let i = 0; i < self.playerSegments.length; i++) {
-                self.playerSegments[i].destroy();
+            for (let i = 0; i < snake.getSegments().length; i++) {
+                snake.getSegments()[i].destroy();
             }
-            self.playerSegments.length = 0;
+            snake.getSegments().length = 0;
             self.socket.emit("playerDied");
             return;
         }
@@ -262,8 +258,8 @@ function update() {
         // set direction and position
         let nextDir = presenter.getPlayerNextDirection(self.cursors, player.direction);
         snake.setNextDirection(nextDir);
-        setPlayerDirection(self, self.playerSegments);
-        setPlayerPosition(self.playerSegments, player);
+        setPlayerDirection(self, snake.getSegments());
+        setPlayerPosition(snake.getSegments(), player);
 
         // emit player movement
         let x = player.x;
