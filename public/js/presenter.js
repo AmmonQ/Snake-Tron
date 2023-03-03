@@ -21,8 +21,6 @@ export class Presenter {
         this.NUM_COLS = 30;
         this.WIDTH = this.TILE_DIAMETER * this.NUM_COLS + this.BORDER_SIZE * 2;
         this.HEIGHT = this.TILE_DIAMETER * this.NUM_ROWS + this.BORDER_SIZE * 2;
-        this.NUM_ICONS_PER_SEGMENTS = 8;
-        this.MOV_DELTA = this.TILE_DIAMETER / this.NUM_ICONS_PER_SEGMENTS;
 
         this.appleCollected = false;
     }
@@ -53,10 +51,6 @@ export class Presenter {
 
     getTileDiameter() {
         return this.TILE_DIAMETER;
-    }
-
-    getMovDelta() {
-        return this.MOV_DELTA;
     }
 
     isAppleCollected() {
@@ -138,17 +132,12 @@ export class Presenter {
         };
     }
 
-    addSegment(playerSegments, lastPosition, funcAddImage, imageType) {
+    addSegment(snake, funcAddImage) {
+        snake.addBodySegment(this.getNewPosition, funcAddImage);
+    }
 
-        let segment = new Segment();
-
-        for (let i = 0; i < this.NUM_ICONS_PER_SEGMENTS; i++) {
-
-            let newPosition = this.getNewPosition(lastPosition, i * this.getMovDelta());
-            segment.addIcon(funcAddImage(newPosition, imageType));
-        }
-
-        playerSegments.push(segment);
+    addHeadSegment(snake, position, funcAddImage) {
+        snake.addHeadSegment(this.getNewPosition, position, funcAddImage);
     }
 
     isPlayerInBounds(player) {

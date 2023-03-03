@@ -2,7 +2,12 @@ import {Segment} from "./segment.js";
 
 export class Snake {
 
-    constructor() {
+    constructor(tileDiameter) {
+
+        this.NUM_ICONS_PER_SEGMENTS = 8;
+        this.SEGMENT_IMAGE_TYPE = 'greenSnakeBody'
+        this.movDelta = tileDiameter / this.NUM_ICONS_PER_SEGMENTS;
+
         this.head;
         this.segments = [];
         this.direction = "left";
@@ -17,8 +22,20 @@ export class Snake {
         };
     }
 
+    setMovDelta(movDelta) {
+        this.movDelta = movDelta;
+    }
+
+    getMovDelta() {
+        return this.movDelta;
+    }
+
     getHead() {
         return this.segments[0].getFirst();
+    }
+
+    getLast() {
+        return this.getSegments()[this.getLength() - 1].getLast();
     }
 
     getSegments() {
@@ -29,8 +46,27 @@ export class Snake {
         return this.getSegments().length;
     }
 
-    addSegment(segment) {
-        this.segments.push(segment);
+    addSegment(funcGetNewPos, insertPos, funcAddImage) {
+
+        let segment = new Segment();
+
+        for (let i = 0; i < this.NUM_ICONS_PER_SEGMENTS; i++) {
+
+            let newPosition = funcGetNewPos(insertPos, i * this.getMovDelta());
+            segment.addIcon(funcAddImage(newPosition, this.SEGMENT_IMAGE_TYPE));
+        }
+
+        this.getSegments().push(segment);
+    }
+
+
+    addHeadSegment(funcGetNewPos, position, funcAddImage) {
+        this.addSegment(funcGetNewPos, position, funcAddImage);
+    }
+
+
+    addBodySegment(funcGetNewPos, funcAddImage) {
+        this.addSegment(funcGetNewPos, this.getLast(), funcAddImage);
     }
 
     getDirection() {
@@ -66,7 +102,7 @@ export class Snake {
         return this.oldPosition.y;
     }
 
-    move(funcGetNewPos, movDelta) {
+    move(funcGetNewPos) {
 
         for (let i = this.getSegments().length - 1; i > 0; i--) {
             this.getSegments()[i].move(this.getSegments()[i - 1].getLast());
@@ -74,7 +110,7 @@ export class Snake {
 
         this.getSegments()[0].move(this.getHead());
 
-        let newPosition = funcGetNewPos(this.getHead(), movDelta);
+        let newPosition = funcGetNewPos(this.getHead(), this.getMovDelta());
 
         this.getHead().setPosition(newPosition.x, newPosition.y);
     }

@@ -29,9 +29,12 @@ let game = new Phaser.Game(config);
 let cursors;
 let graphics;
 let physics;
+let self;
+
+
 let apple;
 let snake;
-let self;
+let socket;
 
 function drawRect(x1, y1, x2, y2, color, alpha) {
     graphics.fillStyle(color, alpha);
@@ -49,19 +52,15 @@ function addOverlap(item1, item2, callbackFunc) {
 function emit(keyword, data) {
 
     if (data) {
-        self.socket.emit(keyword, data);
+        socket.emit(keyword, data);
     } else {
-        self.socket.emit(keyword);
+        socket.emit(keyword);
     }
 }
 
 function preload() {
 
     self = this;
-    cursors = self.input.keyboard.createCursorKeys();
-    graphics = self.add.graphics();
-    physics = self.physics;
-    snake = new Snake();
 
     self.load.image('background', 'assets/grass.png');
     self.load.image('playerIcon', 'assets/pink_snake_tongue_pixel.png');
@@ -75,6 +74,12 @@ function preload() {
     self.load.image('greenSnakeBody', 'assets/green_snake_body.png')
     self.load.image('greenSnakeTail', 'assets/green_snake_tail.png')
     self.load.image('greenSnakeTurn', 'assets/green_snake_turn.png')
+
+    cursors = self.input.keyboard.createCursorKeys();
+    graphics = self.add.graphics();
+    physics = self.physics;
+
+    snake = new Snake(presenter.getTileDiameter());
 
     presenter.drawBoard(drawRect);
 }
@@ -103,9 +108,7 @@ function addOtherPlayers(self, playerInfo) {
 
 function addPlayer(self, playerInfo) {
 
-    console.log("Adding player");
-
-    presenter.addSegment(snake.getSegments(), playerInfo.position, addImage, 'greenSnakeBody');
+    presenter.addHeadSegment(snake, playerInfo.position, addImage);
 
     setPlayerColor(snake.getSegments(), playerInfo);
 }
@@ -113,7 +116,7 @@ function addPlayer(self, playerInfo) {
 function addPlayers(self, players) {
 
     Object.keys(players).forEach(function (id) {
-        if (players[id].id === self.socket.id) {
+        if (players[id].id === socket.id) {
             addPlayer(self, players[id]);
         } else {
             addOtherPlayers(self, players[id]);
@@ -162,33 +165,33 @@ function updateApple(self, appleLocation) {
 
 function create() {
 
-    self.socket = io();
+    socket = io();
 
     self.otherPlayers = physics.add.group();
 
     initScoreText(self);
 
-    self.socket.on('currentPlayers', function (players) {
+    socket.on('currentPlayers', function (players) {
         addPlayers(self, players);
     });
 
-    self.socket.on('newPlayer', function (playerInfo) {
+    socket.on('newPlayer', function (playerInfo) {
         addOtherPlayers(self, playerInfo);
     });
 
-    self.socket.on('disconnected', function (playerId) {
+    socket.on('disconnected', function (playerId) {
         disconnect(self, playerId);
     });
 
-    self.socket.on('playerMoved', function (playerInfo) {
+    socket.on('playerMoved', function (playerInfo) {
         moveOtherPlayer(self, playerInfo);
     });
 
-    self.socket.on('scoreUpdate', function (scores) {
+    socket.on('scoreUpdate', function (scores) {
         updateScores(self, scores);
     });
 
-    self.socket.on('appleLocation', function (appleLocation) {
+    socket.on('appleLocation', function (appleLocation) {
         updateApple(self, appleLocation);
     });
 }
@@ -205,10 +208,7 @@ function addPlayerIcon(playerSegments) {
         return;
     }
 
-    let lastSegment = playerSegments[playerSegments.length - 1];
-    let lastPosition = lastSegment.getLast();
-
-    presenter.addSegment(playerSegments, lastPosition, addImage, 'greenSnakeBody');
+    presenter.addSegment(snake, addImage);
     presenter.setAppleCollected(false);
 }
 
@@ -233,7 +233,7 @@ function update() {
     snake.setNextDirection(nextDir);
     presenter.setSnakeDirection(snake, addPlayerIcon);
 
-    snake.move(presenter.getNewPosition, presenter.getMovDelta());
+    snake.move(presenter.getNewPosition);
 
     // emit player movement
     let x = player.x;

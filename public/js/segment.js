@@ -38,7 +38,6 @@ export class Segment {
 
     move(newPosition) {
 
-
         for (let i = this.icons.length - 1; i > 0; i--) {
             let x = this.icons[i - 1].x;
             let y = this.icons[i - 1].y;
