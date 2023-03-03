@@ -31,6 +31,7 @@ let graphics;
 let physics;
 let apple;
 let snake;
+let self;
 
 function drawRect(x1, y1, x2, y2, color, alpha) {
     graphics.fillStyle(color, alpha);
@@ -41,9 +42,13 @@ function addImage(position, image) {
     return physics.add.image(position.x, position.y, image).setOrigin(0.0, 0.0);
 }
 
+function addOverlap(item1, item2, callbackFunc) {
+    physics.add.overlap(item1, item2, callbackFunc, null, self);
+}
+
 function preload() {
 
-    let self = this;
+    self = this;
     cursors = self.input.keyboard.createCursorKeys();
     graphics = self.add.graphics();
     physics = self.physics;
@@ -140,16 +145,14 @@ function updateApple(self, appleLocation) {
 
     apple = addImage(appleLocation, 'apple');
 
-    physics.add.overlap(snake.getHead(), apple, function () {
+    addOverlap(snake.getHead(), apple, function() {
         presenter.setAppleCollected(true);
-
         self.socket.emit('appleCollected');
-    }, null, self);
+    })
 }
 
 function create() {
 
-    let self = this;
     self.socket = io();
 
     self.otherPlayers = physics.add.group();
@@ -200,23 +203,15 @@ function addPlayerIcon(playerSegments) {
     presenter.setAppleCollected(false);
 }
 
-// update() handles the movement of the snake
-// so the snake is always moving and only changes
-// direction
+// update() fires based on browser speed.
 function update() {
 
-    let self = this;
-
-    if (snake.getSegments().length > 0) {
+    if (snake.getLength() > 0) {
 
         let player = snake.getHead();
 
         if (!presenter.isPlayerInBounds(player)) {
-            console.log("out of bounds");
-            for (let i = 0; i < snake.getSegments().length; i++) {
-                snake.getSegments()[i].destroy();
-            }
-            snake.getSegments().length = 0;
+            snake.destroy();
             self.socket.emit("playerDied");
             return;
         }
@@ -236,6 +231,5 @@ function update() {
         }
 
         snake.setOldPosition(player.x, player.y);
-
     }
 }
