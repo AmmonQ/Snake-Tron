@@ -46,6 +46,15 @@ function addOverlap(item1, item2, callbackFunc) {
     physics.add.overlap(item1, item2, callbackFunc, null, self);
 }
 
+function emit(keyword, data) {
+
+    if (data) {
+        self.socket.emit(keyword, data);
+    } else {
+        self.socket.emit(keyword);
+    }
+}
+
 function preload() {
 
     self = this;
@@ -147,7 +156,7 @@ function updateApple(self, appleLocation) {
 
     addOverlap(snake.getHead(), apple, function() {
         presenter.setAppleCollected(true);
-        self.socket.emit('appleCollected');
+        emit('appleCollected');
     })
 }
 
@@ -206,30 +215,33 @@ function addPlayerIcon(playerSegments) {
 // update() fires based on browser speed.
 function update() {
 
-    if (snake.getLength() > 0) {
-
-        let player = snake.getHead();
-
-        if (!presenter.isPlayerInBounds(player)) {
-            snake.destroy();
-            self.socket.emit("playerDied");
-            return;
-        }
-
-        // set direction and position
-        let nextDir = presenter.getPlayerNextDirection(cursors, player.direction);
-        snake.setNextDirection(nextDir);
-        presenter.setSnakeDirection(snake, addPlayerIcon);
-
-        snake.move(presenter.getNewPosition, presenter.getMovDelta());
-
-        // emit player movement
-        let x = player.x;
-        let y = player.y;
-        if (x !== snake.getOldX() || y !== snake.getOldY()) {
-            self.socket.emit('playerMovement', { x: player.x, y: player.y });
-        }
-
-        snake.setOldPosition(player.x, player.y);
+    if (!snake.isAlive()) {
+        return;
     }
+
+
+    let player = snake.getHead();
+
+    if (!presenter.isPlayerInBounds(player)) {
+        snake.destroy();
+        emit('playerDied');
+        return;
+    }
+
+    // set direction and position
+    let nextDir = presenter.getPlayerNextDirection(cursors, player.direction);
+    snake.setNextDirection(nextDir);
+    presenter.setSnakeDirection(snake, addPlayerIcon);
+
+    snake.move(presenter.getNewPosition, presenter.getMovDelta());
+
+    // emit player movement
+    let x = player.x;
+    let y = player.y;
+    if (x !== snake.getOldX() || y !== snake.getOldY()) {
+        emit('playerMovement', {x: player.x, y: player.y});
+    }
+
+    snake.setOldPosition(player.x, player.y);
+
 }

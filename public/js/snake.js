@@ -41,6 +41,10 @@ export class Snake {
         this.direction = direction;
     }
 
+    isAlive() {
+        return this.getLength() !== 0;
+    }
+
     getNextDirection() {
         return this.nextDirection;
     }
