@@ -26,8 +26,10 @@ let config = {
 
 let game = new Phaser.Game(config);
 
+let cursors;
 let graphics;
 let physics;
+let apple;
 let snake;
 
 function drawRect(x1, y1, x2, y2, color, alpha) {
@@ -35,9 +37,14 @@ function drawRect(x1, y1, x2, y2, color, alpha) {
     graphics.fillRect(x1, y1, x2, y2);
 }
 
+function addImage(position, image) {
+    return physics.add.image(position.x, position.y, image).setOrigin(0.0, 0.0);
+}
+
 function preload() {
 
     let self = this;
+    cursors = self.input.keyboard.createCursorKeys();
     graphics = self.add.graphics();
     physics = self.physics;
     snake = new Snake();
@@ -108,7 +115,7 @@ function disconnect(self, playerId) {
     });
 }
 
-function movePlayer(self, playerInfo) {
+function moveOtherPlayer(self, playerInfo) {
 
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
         if (playerInfo.id === otherPlayer.id) {
@@ -124,20 +131,16 @@ function updateScores(self, scores) {
     self.redScoreText.setText('Red: ' + scores.red);
 }
 
-function addImage(position, image) {
-    return physics.add.image(position.x, position.y, image).setOrigin(0.0, 0.0);
-}
-
 // TODO: Should be in Server
 function updateApple(self, appleLocation) {
 
-    if (self.apple) {
-        self.apple.destroy();
+    if (apple) {
+        apple.destroy();
     }
 
-    self.apple = addImage(appleLocation, 'apple');
+    apple = addImage(appleLocation, 'apple');
 
-    physics.add.overlap(snake.getHead(), self.apple, function () {
+    physics.add.overlap(snake.getHead(), apple, function () {
         presenter.setAppleCollected(true);
 
         self.socket.emit('appleCollected');
@@ -150,7 +153,6 @@ function create() {
     self.socket = io();
 
     self.otherPlayers = physics.add.group();
-    self.cursors = self.input.keyboard.createCursorKeys();
 
     initScoreText(self);
 
@@ -167,7 +169,7 @@ function create() {
     });
 
     self.socket.on('playerMoved', function (playerInfo) {
-        movePlayer(self, playerInfo);
+        moveOtherPlayer(self, playerInfo);
     });
 
     self.socket.on('scoreUpdate', function (scores) {
@@ -185,21 +187,11 @@ function setPlayerColor(player, playerInfo) {
     player.setTint(playerInfo.team === 'blue' ? presenter.getBlue() : presenter.getRed());
 }
 
-// TODO: Should be in Server
-function isCoordinateAligned(coordinate) {
-    return ((coordinate % presenter.getTileDiameter()) === 0);
-}
-
-// TODO: Should be in Server
-function areCoordinatesAligned(player) {
-    return (isCoordinateAligned(player.x) && isCoordinateAligned(player.y));
-}
-
 function setPlayerDirection(self, playerSegments) {
 
     let player = playerSegments[0].getFirst();
 
-    if (!areCoordinatesAligned(player)) {
+    if (!presenter.areCoordinatesAligned(player)) {
         return;
     }
 
@@ -256,7 +248,7 @@ function update() {
         }
 
         // set direction and position
-        let nextDir = presenter.getPlayerNextDirection(self.cursors, player.direction);
+        let nextDir = presenter.getPlayerNextDirection(cursors, player.direction);
         snake.setNextDirection(nextDir);
         setPlayerDirection(self, snake.getSegments());
         setPlayerPosition(snake.getSegments(), player);

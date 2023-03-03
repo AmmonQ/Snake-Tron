@@ -167,4 +167,12 @@ export class Presenter {
 
         return true;
     }
+
+    isCoordinateAligned(coordinate) {
+        return ((coordinate % this.getTileDiameter()) === 0);
+    }
+
+    areCoordinatesAligned(position) {
+        return (this.isCoordinateAligned(position.x) && this.isCoordinateAligned(position.y));
+    }
 }
