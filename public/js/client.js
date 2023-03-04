@@ -206,7 +206,13 @@ function addPlayerIcon(playerSegments) {
     }
 
     snake.addBodySegment(addImage);
+    addOverlap(snake.getHead(), snake.getLastSegment().getLast(), killPlayer);
     presenter.setAppleCollected(false);
+}
+
+function killPlayer() {
+    snake.destroy();
+    serverInterface.notifyPlayerDied();
 }
 
 // update() fires based on browser speed.
@@ -220,8 +226,7 @@ function update() {
     let player = snake.getHead();
 
     if (!presenter.isPlayerInBounds(player)) {
-        snake.destroy();
-        serverInterface.notifyPlayerDied();
+        killPlayer();
         return;
     }
 
