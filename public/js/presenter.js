@@ -1,13 +1,6 @@
-import {Segment} from "./segment.js";
+import {Directions} from "./directions.js";
 
 export class Presenter {
-
-    static Directions = {
-        LEFT: 'left',
-        RIGHT: 'right',
-        UP: 'up',
-        DOWN: 'down'
-    };
 
     constructor() {
 
@@ -21,8 +14,6 @@ export class Presenter {
         this.NUM_COLS = 30;
         this.WIDTH = this.TILE_DIAMETER * this.NUM_COLS + this.BORDER_SIZE * 2;
         this.HEIGHT = this.TILE_DIAMETER * this.NUM_ROWS + this.BORDER_SIZE * 2;
-        this.NUM_ICONS_PER_SEGMENTS = 8;
-        this.MOV_DELTA = this.TILE_DIAMETER / this.NUM_ICONS_PER_SEGMENTS;
 
         this.appleCollected = false;
     }
@@ -55,16 +46,21 @@ export class Presenter {
         return this.TILE_DIAMETER;
     }
 
-    getMovDelta() {
-        return this.MOV_DELTA;
-    }
-
     isAppleCollected() {
         return this.appleCollected;
     }
 
     setAppleCollected(appleCollected) {
         this.appleCollected = appleCollected;
+    }
+
+    convertToColor(colorStr) {
+        switch(colorStr) {
+            case "blue":
+                return this.getBlue();
+            case "red":
+                return this.getRed();
+        }
     }
 
     drawBorder(funcDrawRect, ALPHA) {
@@ -99,58 +95,17 @@ export class Presenter {
 
     getPlayerNextDirection(cursors, playerDirection) {
 
-        if (cursors.left.isDown && playerDirection !== Presenter.Directions.RIGHT) {
-            return Presenter.Directions.LEFT;
-        } else if (cursors.right.isDown && playerDirection !== Presenter.Directions.LEFT) {
-            return Presenter.Directions.RIGHT;
-        } else if (cursors.up.isDown && playerDirection !== Presenter.Directions.DOWN) {
-            return Presenter.Directions.UP;
-        } else if (cursors.down.isDown && playerDirection !== Presenter.Directions.UP) {
-            return Presenter.Directions.DOWN;
+        if (cursors.left.isDown && playerDirection !== Directions.RIGHT) {
+            return Directions.LEFT;
+        } else if (cursors.right.isDown && playerDirection !== Directions.LEFT) {
+            return Directions.RIGHT;
+        } else if (cursors.up.isDown && playerDirection !== Directions.DOWN) {
+            return Directions.UP;
+        } else if (cursors.down.isDown && playerDirection !== Directions.UP) {
+            return Directions.DOWN;
         } else {
             return playerDirection;
         }
-    }
-
-    getNewPosition(position, delta) {
-
-        let newX = position.x;
-        let newY = position.y;
-
-        switch (position.direction) {
-            case Presenter.Directions.LEFT:
-                newX -= delta;
-                break;
-            case Presenter.Directions.RIGHT:
-                newX += delta;
-                break;
-            case Presenter.Directions.UP:
-                newY -= delta;
-                break;
-            case Presenter.Directions.DOWN:
-                newY += delta;
-                break;
-        }
-
-        return {
-            x: newX,
-            y: newY
-        };
-    }
-
-    addSegment(playerSegments, lastPosition, funcAddImage, imageType) {
-
-        console.log("Adding segment");
-
-        let segment = new Segment();
-
-        for (let i = 0; i < this.NUM_ICONS_PER_SEGMENTS; i++) {
-
-            let newPosition = this.getNewPosition(lastPosition, i * this.getMovDelta());
-            segment.addIcon(funcAddImage(newPosition, imageType));
-        }
-
-        playerSegments.push(segment);
     }
 
     isPlayerInBounds(player) {
@@ -166,5 +121,24 @@ export class Presenter {
         }
 
         return true;
+    }
+
+    isCoordinateAligned(coordinate) {
+        return ((coordinate % this.getTileDiameter()) === 0);
+    }
+
+    areCoordinatesAligned(position) {
+        return (this.isCoordinateAligned(position.x) && this.isCoordinateAligned(position.y));
+    }
+
+    setSnakeDirection(snake, funcAddPlayerIcon) {
+
+        if (!this.areCoordinatesAligned(snake.getHead())) {
+            return;
+        }
+
+        funcAddPlayerIcon(snake.getSegments());
+
+        snake.getHead().direction = snake.getNextDirection();
     }
 }

@@ -1,8 +1,11 @@
 import { Presenter } from './presenter.js'
 import { Segment } from "./segment.js";
+import { ServerInterface }  from "./serverInterface.js"
 import { Snake } from "./snake.js"
 
+
 let presenter = new Presenter();
+let serverInterface;
 
 let config = {
     type: Phaser.AUTO,
@@ -26,21 +29,36 @@ let config = {
 
 let game = new Phaser.Game(config);
 
+let cursors;
 let graphics;
 let physics;
+let self;
+
+
+let apple;
 let snake;
+let otherPlayersSnakes;
 
 function drawRect(x1, y1, x2, y2, color, alpha) {
     graphics.fillStyle(color, alpha);
     graphics.fillRect(x1, y1, x2, y2);
 }
 
+function addImage(position, image) {
+    return physics.add.image(position.x, position.y, image).setOrigin(0.0, 0.0);
+}
+
+function addOverlap(item1, item2, callbackFunc) {
+    physics.add.overlap(item1, item2, callbackFunc, null, self);
+}
+
+function setIconColor(icon,  color) {
+    icon.setTint(color);
+}
+
 function preload() {
 
-    let self = this;
-    graphics = self.add.graphics();
-    physics = self.physics;
-    snake = new Snake();
+    self = this;
 
     self.load.image('background', 'assets/grass.png');
     self.load.image('playerIcon', 'assets/pink_snake_tongue_pixel.png');
@@ -53,6 +71,10 @@ function preload() {
     self.load.image('greenSnakeBody', 'assets/g_snake_body.png')
     self.load.image('greenSnakeTail', 'assets/g_snake_tail.png')
 
+
+    cursors = self.input.keyboard.createCursorKeys();
+    graphics = self.add.graphics();
+    physics = self.physics;
 
     presenter.drawBoard(drawRect);
 }
@@ -73,25 +95,22 @@ function initScoreText(self) {
 function addOtherPlayers(self, playerInfo) {
 
     const otherPlayer = self.add.sprite(playerInfo.position.x, playerInfo.position.y, 'otherPlayer').setOrigin(0.0, 0.0);
-    setPlayerColor(otherPlayer, playerInfo);
 
     otherPlayer.id = playerInfo.id;
-    self.otherPlayers.add(otherPlayer);
+    otherPlayersSnakes.add(otherPlayer);
 }
 
 function addPlayer(self, playerInfo) {
 
-    console.log("Adding player");
+    snake.addHeadSegment(playerInfo.position, addImage);
+    snake.setColor(presenter.convertToColor(playerInfo.team), setIconColor);
 
-    presenter.addSegment(snake.getSegments(), playerInfo.position, addImage, 'greenSnakeHead');
-
-    setPlayerColor(snake.getSegments(), playerInfo);
 }
 
 function addPlayers(self, players) {
 
     Object.keys(players).forEach(function (id) {
-        if (players[id].id === self.socket.id) {
+        if (players[id].id === serverInterface.getSocketID()) {
             addPlayer(self, players[id]);
         } else {
             addOtherPlayers(self, players[id]);
@@ -100,16 +119,16 @@ function addPlayers(self, players) {
 }
 
 function disconnect(self, playerId) {
-    self.otherPlayers.getChildren().forEach(function (otherPlayer) {
+    otherPlayersSnakes.getChildren().forEach(function (otherPlayer) {
         if (playerId === otherPlayer.id) {
             otherPlayer.destroy();
         }
     });
 }
 
-function movePlayer(self, playerInfo) {
+function moveOtherPlayer(self, playerInfo) {
 
-    self.otherPlayers.getChildren().forEach(function (otherPlayer) {
+    otherPlayersSnakes.getChildren().forEach(function (otherPlayer) {
         if (playerInfo.id === otherPlayer.id) {
             otherPlayer.setPosition(playerInfo.position.x, playerInfo.position.y);
         }
@@ -123,101 +142,52 @@ function updateScores(self, scores) {
     self.redScoreText.setText('Red: ' + scores.red);
 }
 
-function addImage(position, image) {
-    return physics.add.image(position.x, position.y, image).setOrigin(0.0, 0.0);
-}
-
 // TODO: Should be in Server
 function updateApple(self, appleLocation) {
 
-    if (self.apple) {
-        self.apple.destroy();
+    if (apple) {
+        apple.destroy();
     }
 
-    self.apple = addImage(appleLocation, 'apple');
+    apple = addImage(appleLocation, 'apple');
 
-    physics.add.overlap(snake.getHead(), self.apple, function () {
+    addOverlap(snake.getHead(), apple, function() {
         presenter.setAppleCollected(true);
-
-        self.socket.emit('appleCollected');
-    }, null, self);
+        serverInterface.notifyAppleCollected();
+    })
 }
 
 function create() {
 
-    let self = this;
-    self.socket = io();
-
-    self.otherPlayers = physics.add.group();
-    self.cursors = self.input.keyboard.createCursorKeys();
+    snake = new Snake(presenter.getTileDiameter());
+    serverInterface = new ServerInterface();
+    otherPlayersSnakes = physics.add.group();
 
     initScoreText(self);
 
-    self.socket.on('currentPlayers', function (players) {
+    serverInterface.getSocket().on('currentPlayers', function (players) {
         addPlayers(self, players);
     });
 
-    self.socket.on('newPlayer', function (playerInfo) {
+    serverInterface.getSocket().on('newPlayer', function (playerInfo) {
         addOtherPlayers(self, playerInfo);
     });
 
-    self.socket.on('disconnected', function (playerId) {
+    serverInterface.getSocket().on('disconnected', function (playerId) {
         disconnect(self, playerId);
     });
 
-    self.socket.on('playerMoved', function (playerInfo) {
-        movePlayer(self, playerInfo);
+    serverInterface.getSocket().on('playerMoved', function (playerInfo) {
+        moveOtherPlayer(self, playerInfo);
     });
 
-    self.socket.on('scoreUpdate', function (scores) {
+    serverInterface.getSocket().on('scoreUpdate', function (scores) {
         updateScores(self, scores);
     });
 
-    self.socket.on('appleLocation', function (appleLocation) {
+    serverInterface.getSocket().on('appleLocation', function (appleLocation) {
         updateApple(self, appleLocation);
     });
-}
-
-// TODO: Should be in Server
-function setPlayerColor(player, playerInfo) {
-    console.log("BLUE: " + presenter.getBlue() + " RED: " + presenter.getRed());
-    player.setTint(playerInfo.team === 'blue' ? presenter.getBlue() : presenter.getRed());
-}
-
-// TODO: Should be in Server
-function isCoordinateAligned(coordinate) {
-    return ((coordinate % presenter.getTileDiameter()) === 0);
-}
-
-// TODO: Should be in Server
-function areCoordinatesAligned(player) {
-    return (isCoordinateAligned(player.x) && isCoordinateAligned(player.y));
-}
-
-function setPlayerDirection(self, playerSegments) {
-
-    let player = playerSegments[0].getFirst();
-
-    if (!areCoordinatesAligned(player)) {
-        return;
-    }
-
-    addPlayerIcon(snake.getSegments());
-
-    player.direction = snake.getNextDirection();
-}
-
-function setPlayerPosition(playerSegments, player) {
-
-    for (let i = playerSegments.length - 1; i > 0; i--) {
-        playerSegments[i].move(playerSegments[i - 1].getLast());
-    }
-
-    playerSegments[0].move(snake.getHead());
-
-    let newPosition = presenter.getNewPosition(player, presenter.getMovDelta());
-
-    player.setPosition(newPosition.x, newPosition.y);
 }
 
 function addPlayerIcon(playerSegments) {
@@ -226,51 +196,44 @@ function addPlayerIcon(playerSegments) {
         return;
     }
 
-    let lastSegment = playerSegments[playerSegments.length - 1];
-    let lastPosition = lastSegment.getLast();
-
-    presenter.addSegment(playerSegments, lastPosition, addImage, 'greenSnakeBody');
+    snake.addBodySegment(addImage);
+    addOverlap(snake.getHead(), snake.getLastSegment().getLast(), killPlayer);
     presenter.setAppleCollected(false);
 }
 
-// update() handles the movement of the snake
-// so the snake is always moving and only changes
-// direction
+function killPlayer() {
+    snake.destroy();
+    serverInterface.notifyPlayerDied();
+}
+
+// update() fires based on browser speed.
 function update() {
 
-    let self = this;
-
-    if (snake.getSegments().length > 0) {
-
-        let player = snake.getHead();
-
-        if (!presenter.isPlayerInBounds(player)) {
-            console.log("out of bounds");
-            for (let i = 0; i < snake.getSegments().length; i++) {
-                snake.getSegments()[i].destroy();
-            }
-            snake.getSegments().length = 0;
-            self.socket.emit("playerDied");
-            return;
-        }
-
-        // set direction and position
-        let nextDir = presenter.getPlayerNextDirection(self.cursors, player.direction);
-        snake.setNextDirection(nextDir);
-        setPlayerDirection(self, snake.getSegments());
-        setPlayerPosition(snake.getSegments(), player);
-
-        // emit player movement
-        let x = player.x;
-        let y = player.y;
-        if (player.oldPosition && (x !== player.oldPosition.x || y !== player.oldPosition.y)) {
-            self.socket.emit('playerMovement', { x: player.x, y: player.y });
-        }
-
-        // save old position data
-        player.oldPosition = {
-            x: player.x,
-            y: player.y,
-        };
+    if (!snake.isAlive()) {
+        return;
     }
+
+
+    let player = snake.getHead();
+
+    if (!presenter.isPlayerInBounds(player)) {
+        killPlayer();
+        return;
+    }
+
+    // set direction and position
+    let nextDir = presenter.getPlayerNextDirection(cursors, player.direction);
+    snake.setNextDirection(nextDir);
+    presenter.setSnakeDirection(snake, addPlayerIcon);
+
+    snake.move();
+
+    let x = player.x;
+    let y = player.y;
+    if (x !== snake.getOldX() || y !== snake.getOldY()) {
+        serverInterface.notifyPlayerMoved({x: player.x, y: player.y});
+    }
+
+    snake.setOldPosition(player.x, player.y);
+
 }
