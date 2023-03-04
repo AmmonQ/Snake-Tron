@@ -1,13 +1,6 @@
-import {Segment} from "./segment.js";
+import {Directions} from "./directions.js";
 
 export class Presenter {
-
-    static Directions = {
-        LEFT: 'left',
-        RIGHT: 'right',
-        UP: 'up',
-        DOWN: 'down'
-    };
 
     constructor() {
 
@@ -93,51 +86,17 @@ export class Presenter {
 
     getPlayerNextDirection(cursors, playerDirection) {
 
-        if (cursors.left.isDown && playerDirection !== Presenter.Directions.RIGHT) {
-            return Presenter.Directions.LEFT;
-        } else if (cursors.right.isDown && playerDirection !== Presenter.Directions.LEFT) {
-            return Presenter.Directions.RIGHT;
-        } else if (cursors.up.isDown && playerDirection !== Presenter.Directions.DOWN) {
-            return Presenter.Directions.UP;
-        } else if (cursors.down.isDown && playerDirection !== Presenter.Directions.UP) {
-            return Presenter.Directions.DOWN;
+        if (cursors.left.isDown && playerDirection !== Directions.RIGHT) {
+            return Directions.LEFT;
+        } else if (cursors.right.isDown && playerDirection !== Directions.LEFT) {
+            return Directions.RIGHT;
+        } else if (cursors.up.isDown && playerDirection !== Directions.DOWN) {
+            return Directions.UP;
+        } else if (cursors.down.isDown && playerDirection !== Directions.UP) {
+            return Directions.DOWN;
         } else {
             return playerDirection;
         }
-    }
-
-    getNewPosition(position, delta) {
-
-        let newX = position.x;
-        let newY = position.y;
-
-        switch (position.direction) {
-            case Presenter.Directions.LEFT:
-                newX -= delta;
-                break;
-            case Presenter.Directions.RIGHT:
-                newX += delta;
-                break;
-            case Presenter.Directions.UP:
-                newY -= delta;
-                break;
-            case Presenter.Directions.DOWN:
-                newY += delta;
-                break;
-        }
-
-        return {
-            x: newX,
-            y: newY
-        };
-    }
-
-    addSegment(snake, funcAddImage) {
-        snake.addBodySegment(this.getNewPosition, funcAddImage);
-    }
-
-    addHeadSegment(snake, position, funcAddImage) {
-        snake.addHeadSegment(this.getNewPosition, position, funcAddImage);
     }
 
     isPlayerInBounds(player) {

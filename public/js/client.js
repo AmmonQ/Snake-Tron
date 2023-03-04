@@ -1,8 +1,11 @@
 import { Presenter } from './presenter.js'
 import { Segment } from "./segment.js";
+import { ServerInterface }  from "./serverInterface.js"
 import { Snake } from "./snake.js"
 
+
 let presenter = new Presenter();
+let serverInterface;
 
 let config = {
     type: Phaser.AUTO,
@@ -34,7 +37,7 @@ let self;
 
 let apple;
 let snake;
-let socket;
+let otherPlayersSnakes;
 
 function drawRect(x1, y1, x2, y2, color, alpha) {
     graphics.fillStyle(color, alpha);
@@ -47,15 +50,6 @@ function addImage(position, image) {
 
 function addOverlap(item1, item2, callbackFunc) {
     physics.add.overlap(item1, item2, callbackFunc, null, self);
-}
-
-function emit(keyword, data) {
-
-    if (data) {
-        socket.emit(keyword, data);
-    } else {
-        socket.emit(keyword);
-    }
 }
 
 function preload() {
@@ -79,8 +73,6 @@ function preload() {
     graphics = self.add.graphics();
     physics = self.physics;
 
-    snake = new Snake(presenter.getTileDiameter());
-
     presenter.drawBoard(drawRect);
 }
 
@@ -100,23 +92,21 @@ function initScoreText(self) {
 function addOtherPlayers(self, playerInfo) {
 
     const otherPlayer = self.add.sprite(playerInfo.position.x, playerInfo.position.y, 'otherPlayer').setOrigin(0.0, 0.0);
-    setPlayerColor(otherPlayer, playerInfo);
 
     otherPlayer.id = playerInfo.id;
-    self.otherPlayers.add(otherPlayer);
+    otherPlayersSnakes.add(otherPlayer);
 }
 
 function addPlayer(self, playerInfo) {
 
-    presenter.addHeadSegment(snake, playerInfo.position, addImage);
-
-    setPlayerColor(snake.getSegments(), playerInfo);
+    snake.addHeadSegment(playerInfo.position, addImage);
+    snake.setColor(getColor(playerInfo.team), setIconColor);
 }
 
 function addPlayers(self, players) {
 
     Object.keys(players).forEach(function (id) {
-        if (players[id].id === socket.id) {
+        if (players[id].id === serverInterface.getSocketID()) {
             addPlayer(self, players[id]);
         } else {
             addOtherPlayers(self, players[id]);
@@ -125,7 +115,7 @@ function addPlayers(self, players) {
 }
 
 function disconnect(self, playerId) {
-    self.otherPlayers.getChildren().forEach(function (otherPlayer) {
+    otherPlayersSnakes.getChildren().forEach(function (otherPlayer) {
         if (playerId === otherPlayer.id) {
             otherPlayer.destroy();
         }
@@ -134,7 +124,7 @@ function disconnect(self, playerId) {
 
 function moveOtherPlayer(self, playerInfo) {
 
-    self.otherPlayers.getChildren().forEach(function (otherPlayer) {
+    otherPlayersSnakes.getChildren().forEach(function (otherPlayer) {
         if (playerInfo.id === otherPlayer.id) {
             otherPlayer.setPosition(playerInfo.position.x, playerInfo.position.y);
         }
@@ -159,47 +149,54 @@ function updateApple(self, appleLocation) {
 
     addOverlap(snake.getHead(), apple, function() {
         presenter.setAppleCollected(true);
-        emit('appleCollected');
+        serverInterface.notifyAppleCollected();
     })
 }
 
 function create() {
 
-    socket = io();
-
-    self.otherPlayers = physics.add.group();
+    snake = new Snake(presenter.getTileDiameter());
+    serverInterface = new ServerInterface();
+    otherPlayersSnakes = physics.add.group();
 
     initScoreText(self);
 
-    socket.on('currentPlayers', function (players) {
+    serverInterface.getSocket().on('currentPlayers', function (players) {
         addPlayers(self, players);
     });
 
-    socket.on('newPlayer', function (playerInfo) {
+    serverInterface.getSocket().on('newPlayer', function (playerInfo) {
         addOtherPlayers(self, playerInfo);
     });
 
-    socket.on('disconnected', function (playerId) {
+    serverInterface.getSocket().on('disconnected', function (playerId) {
         disconnect(self, playerId);
     });
 
-    socket.on('playerMoved', function (playerInfo) {
+    serverInterface.getSocket().on('playerMoved', function (playerInfo) {
         moveOtherPlayer(self, playerInfo);
     });
 
-    socket.on('scoreUpdate', function (scores) {
+    serverInterface.getSocket().on('scoreUpdate', function (scores) {
         updateScores(self, scores);
     });
 
-    socket.on('appleLocation', function (appleLocation) {
+    serverInterface.getSocket().on('appleLocation', function (appleLocation) {
         updateApple(self, appleLocation);
     });
 }
 
-// TODO: Should be in Server
-function setPlayerColor(player, playerInfo) {
-    console.log("BLUE: " + presenter.getBlue() + " RED: " + presenter.getRed());
-    player.setTint(playerInfo.team === 'blue' ? presenter.getBlue() : presenter.getRed());
+function getColor(colorStr) {
+    switch(colorStr) {
+        case "blue":
+            return presenter.getBlue();
+        case "red":
+            return presenter.getRed();
+    }
+}
+
+function setIconColor(icon,  color) {
+    icon.setTint(color);
 }
 
 function addPlayerIcon(playerSegments) {
@@ -208,7 +205,7 @@ function addPlayerIcon(playerSegments) {
         return;
     }
 
-    presenter.addSegment(snake, addImage);
+    snake.addBodySegment(addImage);
     presenter.setAppleCollected(false);
 }
 
@@ -224,7 +221,7 @@ function update() {
 
     if (!presenter.isPlayerInBounds(player)) {
         snake.destroy();
-        emit('playerDied');
+        serverInterface.notifyPlayerDied();
         return;
     }
 
@@ -233,13 +230,12 @@ function update() {
     snake.setNextDirection(nextDir);
     presenter.setSnakeDirection(snake, addPlayerIcon);
 
-    snake.move(presenter.getNewPosition);
+    snake.move();
 
-    // emit player movement
     let x = player.x;
     let y = player.y;
     if (x !== snake.getOldX() || y !== snake.getOldY()) {
-        emit('playerMovement', {x: player.x, y: player.y});
+        serverInterface.notifyPlayerMoved({x: player.x, y: player.y});
     }
 
     snake.setOldPosition(player.x, player.y);

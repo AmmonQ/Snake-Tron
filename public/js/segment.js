@@ -47,4 +47,11 @@ export class Segment {
 
         this.getFirst().setPosition(newPosition.x, newPosition.y);
     }
+
+    setColor(color, setIconColor) {
+
+        for (let i = 0; i < this.icons.length; i++) {
+            setIconColor(this.icons[i], color);
+        }
+    }
 }

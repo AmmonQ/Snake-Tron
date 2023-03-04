@@ -1,3 +1,4 @@
+import {Directions} from "./directions.js";
 import {Segment} from "./segment.js";
 
 export class Snake {
@@ -8,10 +9,11 @@ export class Snake {
         this.SEGMENT_IMAGE_TYPE = 'greenSnakeBody'
         this.movDelta = tileDiameter / this.NUM_ICONS_PER_SEGMENTS;
 
-        this.head;
         this.segments = [];
-        this.direction = "left";
+        this.direction = Directions.LEFT;
         this.nextDirection;
+        this.color;
+        this.funcSetIconColor;
         this.position = {
             x: -1,
             y: -1
@@ -44,29 +46,6 @@ export class Snake {
 
     getLength() {
         return this.getSegments().length;
-    }
-
-    addSegment(funcGetNewPos, insertPos, funcAddImage) {
-
-        let segment = new Segment();
-
-        for (let i = 0; i < this.NUM_ICONS_PER_SEGMENTS; i++) {
-
-            let newPosition = funcGetNewPos(insertPos, i * this.getMovDelta());
-            segment.addIcon(funcAddImage(newPosition, this.SEGMENT_IMAGE_TYPE));
-        }
-
-        this.getSegments().push(segment);
-    }
-
-
-    addHeadSegment(funcGetNewPos, position, funcAddImage) {
-        this.addSegment(funcGetNewPos, position, funcAddImage);
-    }
-
-
-    addBodySegment(funcGetNewPos, funcAddImage) {
-        this.addSegment(funcGetNewPos, this.getLast(), funcAddImage);
     }
 
     getDirection() {
@@ -102,7 +81,61 @@ export class Snake {
         return this.oldPosition.y;
     }
 
-    move(funcGetNewPos) {
+    getLastSegment() {
+        return this.getSegments()[this.getLength() - 1];
+    }
+
+    getNewPos(position, delta) {
+
+        let newX = position.x;
+        let newY = position.y;
+
+        switch (position.direction) {
+            case Directions.LEFT:
+                newX -= delta;
+                break;
+            case Directions.RIGHT:
+                newX += delta;
+                break;
+            case Directions.UP:
+                newY -= delta;
+                break;
+            case Directions.DOWN:
+                newY += delta;
+                break;
+        }
+
+        return {
+            x: newX,
+            y: newY
+        };
+    }
+
+    addSegment(insertPos, funcAddImage) {
+
+        let segment = new Segment();
+
+        for (let i = 0; i < this.NUM_ICONS_PER_SEGMENTS; i++) {
+
+            let newPosition = this.getNewPos(insertPos, i * this.getMovDelta());
+            segment.addIcon(funcAddImage(newPosition, this.SEGMENT_IMAGE_TYPE));
+        }
+
+        this.getSegments().push(segment);
+    }
+
+
+    addHeadSegment(position, funcAddImage) {
+        this.addSegment(position, funcAddImage);
+    }
+
+
+    addBodySegment(funcAddImage) {
+        this.addSegment(this.getLast(), funcAddImage);
+        this.getLastSegment().setColor(this.color, this.funcSetIconColor);
+    }
+
+    move() {
 
         for (let i = this.getSegments().length - 1; i > 0; i--) {
             this.getSegments()[i].move(this.getSegments()[i - 1].getLast());
@@ -110,9 +143,9 @@ export class Snake {
 
         this.getSegments()[0].move(this.getHead());
 
-        let newPosition = funcGetNewPos(this.getHead(), this.getMovDelta());
+        let newPos = this.getNewPos(this.getHead(), this.getMovDelta());
 
-        this.getHead().setPosition(newPosition.x, newPosition.y);
+        this.getHead().setPosition(newPos.x, newPos.y);
     }
 
     destroy() {
@@ -121,5 +154,15 @@ export class Snake {
             this.getSegments()[i].destroy();
         }
         this.getSegments().length = 0;
+    }
+
+    setColor(color, funcSetIconColor) {
+
+        for (let i = 0; i < this.getLength(); i++) {
+            this.getSegments()[i].setColor(color, funcSetIconColor);
+        }
+
+        this.color = color;
+        this.funcSetIconColor = funcSetIconColor;
     }
 }
