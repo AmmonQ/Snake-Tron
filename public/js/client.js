@@ -46,14 +46,13 @@ function preload() {
     self.load.image('playerIcon', 'assets/pink_snake_tongue_pixel.png');
     self.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
     self.load.image('apple', 'assets/apple.png');
-    self.load.image('greenSnakeHead', 'assets/green_snake_head.png')
-    self.load.image('foeSnakeHead', 'assets/foe_snake_head.png')
-    self.load.image('foeSnakeTurn', 'assets/foe_snake_turn.png')
-    self.load.image('foeSnakeTail', 'assets/foe_snake_tail.png')
-    self.load.image('foeSnakeBody', 'assets/foe_snake_body.png')
-    self.load.image('greenSnakeBody', 'assets/green_snake_body.png')
-    self.load.image('greenSnakeTail', 'assets/green_snake_tail.png')
-    self.load.image('greenSnakeTurn', 'assets/green_snake_turn.png')
+    self.load.image('greenSnakeHead', 'assets/g_snake_head.png')
+    self.load.image('foeSnakeHead', 'assets/o_snake_head.png')
+    self.load.image('foeSnakeTail', 'assets/o_snake_tail.png')
+    self.load.image('foeSnakeBody', 'assets/o_snake_body.png')
+    self.load.image('greenSnakeBody', 'assets/g_snake_body.png')
+    self.load.image('greenSnakeTail', 'assets/g_snake_tail.png')
+
 
     presenter.drawBoard(drawRect);
 }
@@ -84,7 +83,7 @@ function addPlayer(self, playerInfo) {
 
     console.log("Adding player");
 
-    presenter.addSegment(snake.getSegments(), playerInfo.position, addImage, 'greenSnakeBody');
+    presenter.addSegment(snake.getSegments(), playerInfo.position, addImage, 'greenSnakeHead');
 
     setPlayerColor(snake.getSegments(), playerInfo);
 }
