@@ -6,14 +6,15 @@ export class Snake {
     constructor(tileDiameter) {
 
         this.NUM_ICONS_PER_SEGMENTS = 8;
-        this.SEGMENT_IMAGE_TYPE = 'greenSnakeBody'
+        this.SEGMENT_IMAGE_TYPE = 'greenSnakeBody';
+        this.HEAD_IMAGE_TYPE = 'greenSnakeHead';
         this.movDelta = tileDiameter / this.NUM_ICONS_PER_SEGMENTS;
 
         this.segments = [];
         this.direction = Directions.LEFT;
         this.nextDirection;
-        this.color;
-        this.funcSetIconColor;
+        this.color = "blue";
+        this.funcSetIconColor = (icon, color) => {};
         this.position = {
             x: -1,
             y: -1
@@ -127,6 +128,8 @@ export class Snake {
 
     addHeadSegment(position, funcAddImage) {
         this.addSegment(position, funcAddImage);
+        this.getLastSegment().getFirst().destroy();
+        this.getLastSegment().setFirst(funcAddImage(position, this.HEAD_IMAGE_TYPE));
     }
 
 

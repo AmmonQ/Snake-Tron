@@ -54,6 +54,15 @@ export class Presenter {
         this.appleCollected = appleCollected;
     }
 
+    convertToColor(colorStr) {
+        switch(colorStr) {
+            case "blue":
+                return this.getBlue();
+            case "red":
+                return this.getRed();
+        }
+    }
+
     drawBorder(funcDrawRect, ALPHA) {
 
         const BORDER_COLOR = 0x004C29;

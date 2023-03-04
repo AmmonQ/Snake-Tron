@@ -52,6 +52,10 @@ function addOverlap(item1, item2, callbackFunc) {
     physics.add.overlap(item1, item2, callbackFunc, null, self);
 }
 
+function setIconColor(icon,  color) {
+    icon.setTint(color);
+}
+
 function preload() {
 
     self = this;
@@ -100,7 +104,7 @@ function addOtherPlayers(self, playerInfo) {
 function addPlayer(self, playerInfo) {
 
     snake.addHeadSegment(playerInfo.position, addImage);
-    snake.setColor(getColor(playerInfo.team), setIconColor);
+    snake.setColor(presenter.convertToColor(playerInfo.team), setIconColor);
 }
 
 function addPlayers(self, players) {
@@ -184,19 +188,6 @@ function create() {
     serverInterface.getSocket().on('appleLocation', function (appleLocation) {
         updateApple(self, appleLocation);
     });
-}
-
-function getColor(colorStr) {
-    switch(colorStr) {
-        case "blue":
-            return presenter.getBlue();
-        case "red":
-            return presenter.getRed();
-    }
-}
-
-function setIconColor(icon,  color) {
-    icon.setTint(color);
 }
 
 function addPlayerIcon(playerSegments) {

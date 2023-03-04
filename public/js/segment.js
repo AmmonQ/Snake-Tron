@@ -21,6 +21,15 @@ export class Segment {
         }
     }
 
+    setFirst(icon) {
+        if (this.icons.length > 0) {
+            this.icons[0] = icon;
+        }
+        else {
+            console.log("Segment is Empty\n");
+        }
+    }
+
     getLast() {
         if (this.icons.length > 0) {
             return this.icons[this.icons.length - 1];
