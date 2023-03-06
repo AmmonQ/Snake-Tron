@@ -68,19 +68,18 @@ function preload() {
 
     self = this;
 
-    let dirPath = 'assets/';
+    let dirName = 'assets/';
 
-    loadImage('background', dirPath + 'grass.png');
-    loadImage('playerIcon', dirPath + 'pink_snake_tongue_pixel.png');
-    loadImage('otherPlayer', dirPath + 'pink_snake_pixel.png');
-    loadImage('apple', dirPath + 'apple.png');
-    loadImage('greenSnakeHead', dirPath + 'g_snake_head.png');
-    loadImage('foeSnakeHead', dirPath + 'o_snake_head.png');
-    loadImage('foeSnakeTail', dirPath + 'o_snake_tail.png');
-    loadImage('foeSnakeBody', dirPath + 'o_snake_body.png');
-    loadImage('greenSnakeBody', dirPath + 'g_snake_body.png');
-    loadImage('greenSnakeTail', dirPath + 'g_snake_tail.png');
+    const imageMap = {
+        'background': 'grass.png', 'playerIcon': 'pink_snake_tongue_pixel.png', 'otherPlayer': 'pink_snake_pixel.png',
+        'apple': 'apple.png', 'greenSnakeHead': 'g_snake_head.png', 'foeSnakeHead': 'o_snake_head.png',
+        'foeSnakeTail': 'o_snake_tail.png', 'foeSnakeBody': 'o_snake_body.png', 'greenSnakeBody': 'g_snake_body.png',
+        'greenSnakeTail': 'g_snake_tail.png'
+    };
 
+    for (const [imageName, fileName] of Object.entries(imageMap)) {
+        loadImage(imageName, dirName + fileName);
+    }
 }
 
 function initScoreText(self) {
@@ -199,7 +198,7 @@ function create() {
     });
 }
 
-function addPlayerIcon(playerSegments) {
+function addPlayerIcon() {
 
     if (!presenter.isAppleCollected()) {
         return;
@@ -211,6 +210,7 @@ function addPlayerIcon(playerSegments) {
 }
 
 function killPlayer() {
+
     snake.destroy();
     serverInterface.notifyPlayerDied();
 }
