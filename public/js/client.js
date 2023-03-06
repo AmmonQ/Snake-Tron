@@ -88,17 +88,27 @@ function preload() {
     }
 }
 
-function initScoreText(self) {
 
-    const BLUE_X = 16;
-    const RED_X = 584;
-    const SCORE_Y = 16;
-    const FONT_SIZE = '32px'
-    const BLUE_STR = '#0000FF';
-    const RED_STR = '#FF0000';
+function getElement(idStr) {
+    return document.getElementById(idStr);
+}
 
-    self.blueScoreText = self.add.text(BLUE_X, SCORE_Y, '', { fontSize: FONT_SIZE, fill: BLUE_STR });
-    self.redScoreText = self.add.text(RED_X, SCORE_Y, '', { fontSize: FONT_SIZE, fill: RED_STR });
+function setText(idStr, text) {
+    getElement(idStr).textContent = text;
+}
+
+function setBlueScoreText(text) {
+    setText("blue-score", text);
+}
+
+function setRedScoreText(text) {
+    setText("red-score", text);
+}
+
+function initScoreText() {
+
+    setBlueScoreText('0');
+    setRedScoreText('0');
 }
 
 function addOtherPlayers(self, playerInfo) {
@@ -145,9 +155,8 @@ function moveOtherPlayer(self, playerInfo) {
 
 // TODO: Should be in Server
 function updateScores(self, scores) {
-
-    self.blueScoreText.setText('Blue: ' + scores.blue);
-    self.redScoreText.setText('Red: ' + scores.red);
+    setBlueScoreText("Blue: " + scores.blue);
+    setRedScoreText("Red: " + scores.red);
 }
 
 // TODO: Should be in Server

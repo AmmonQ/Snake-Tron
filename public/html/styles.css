@@ -1,0 +1,18 @@
+body {
+    background-color: blue;
+}
+
+.scores {
+    display: flex;
+    flex-direction: row;
+}
+
+.blue-score {
+    display: flex;
+    color: blue;
+}
+
+.red-score {
+    display: flex;
+    color: red;
+}
