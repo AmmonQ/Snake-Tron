@@ -71,9 +71,15 @@ function preload() {
     let dirName = 'assets/';
 
     const imageMap = {
-        'background': 'grass.png', 'playerIcon': 'pink_snake_tongue_pixel.png', 'otherPlayer': 'pink_snake_pixel.png',
-        'apple': 'apple.png', 'greenSnakeHead': 'g_snake_head.png', 'foeSnakeHead': 'o_snake_head.png',
-        'foeSnakeTail': 'o_snake_tail.png', 'foeSnakeBody': 'o_snake_body.png', 'greenSnakeBody': 'g_snake_body.png',
+        'background': 'grass.png',
+        'playerIcon': 'pink_snake_tongue_pixel.png',
+        'otherPlayer': 'pink_snake_pixel.png',
+        'apple': 'apple.png',
+        'greenSnakeHead': 'g_snake_head.png',
+        'foeSnakeHead': 'o_snake_head.png',
+        'foeSnakeTail': 'o_snake_tail.png',
+        'foeSnakeBody': 'o_snake_body.png',
+        'greenSnakeBody': 'g_snake_body.png',
         'greenSnakeTail': 'g_snake_tail.png'
     };
 
