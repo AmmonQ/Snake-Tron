@@ -94,12 +94,19 @@ export class Snake {
         return this.getSegments()[this.getLength() - 1];
     }
 
-    updatePos() {
+    updateOldPos() {
         this.setOldPosition(this.getX(), this.getY());
     }
 
     hasMoved() {
         return this.getX() !== this.getOldX() || this.getY() !== this.getOldY();
+    }
+
+    getPos() {
+        return {
+            x: this.getX(),
+            y: this.getY()
+        };
     }
 
     getNewPos(position, delta) {

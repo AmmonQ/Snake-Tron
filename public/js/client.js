@@ -237,8 +237,8 @@ function update() {
     snake.move();
 
     if (snake.hasMoved()) {
-        serverInterface.notifyPlayerMoved({x: snake.getX(), y: snake.getY()});
+        serverInterface.notifyPlayerMoved(snake.getPos());
     }
 
-    snake.updatePos();
+    snake.updateOldPos();
 }
