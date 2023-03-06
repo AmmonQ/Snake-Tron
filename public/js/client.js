@@ -44,8 +44,12 @@ function drawRect(x1, y1, x2, y2, color, alpha) {
     graphics.fillRect(x1, y1, x2, y2);
 }
 
-function addImage(position, image) {
-    return physics.add.image(position.x, position.y, image).setOrigin(0.0, 0.0);
+function addImage(position, imageName) {
+    return physics.add.image(position.x, position.y, imageName).setOrigin(0.0, 0.0);
+}
+
+function addSprite(position, imageName) {
+    return self.add.sprite(position.x, position.y, imageName).setOrigin(0.0, 0.0);
 }
 
 function addOverlap(item1, item2, callbackFunc) {
@@ -56,27 +60,27 @@ function setIconColor(icon,  color) {
     icon.setTint(color);
 }
 
+function loadImage(imageName, imagePath) {
+    self.load.image(imageName, imagePath);
+}
+
 function preload() {
 
     self = this;
 
-    self.load.image('background', 'assets/grass.png');
-    self.load.image('playerIcon', 'assets/pink_snake_tongue_pixel.png');
-    self.load.image('otherPlayer', 'assets/pink_snake_pixel.png');
-    self.load.image('apple', 'assets/apple.png');
-    self.load.image('greenSnakeHead', 'assets/g_snake_head.png')
-    self.load.image('foeSnakeHead', 'assets/o_snake_head.png')
-    self.load.image('foeSnakeTail', 'assets/o_snake_tail.png')
-    self.load.image('foeSnakeBody', 'assets/o_snake_body.png')
-    self.load.image('greenSnakeBody', 'assets/g_snake_body.png')
-    self.load.image('greenSnakeTail', 'assets/g_snake_tail.png')
+    let dirPath = 'assets/';
 
+    loadImage('background', dirPath + 'grass.png');
+    loadImage('playerIcon', dirPath + 'pink_snake_tongue_pixel.png');
+    loadImage('otherPlayer', dirPath + 'pink_snake_pixel.png');
+    loadImage('apple', dirPath + 'apple.png');
+    loadImage('greenSnakeHead', dirPath + 'g_snake_head.png');
+    loadImage('foeSnakeHead', dirPath + 'o_snake_head.png');
+    loadImage('foeSnakeTail', dirPath + 'o_snake_tail.png');
+    loadImage('foeSnakeBody', dirPath + 'o_snake_body.png');
+    loadImage('greenSnakeBody', dirPath + 'g_snake_body.png');
+    loadImage('greenSnakeTail', dirPath + 'g_snake_tail.png');
 
-    cursors = self.input.keyboard.createCursorKeys();
-    graphics = self.add.graphics();
-    physics = self.physics;
-
-    presenter.drawBoard(drawRect);
 }
 
 function initScoreText(self) {
@@ -94,8 +98,7 @@ function initScoreText(self) {
 
 function addOtherPlayers(self, playerInfo) {
 
-    const otherPlayer = self.add.sprite(playerInfo.position.x, playerInfo.position.y, 'otherPlayer').setOrigin(0.0, 0.0);
-
+    const otherPlayer = addSprite(playerInfo.position, 'otherPlayer');
     otherPlayer.id = playerInfo.id;
     otherPlayersSnakes.add(otherPlayer);
 }
@@ -159,6 +162,12 @@ function updateApple(self, appleLocation) {
 
 function create() {
 
+    cursors = self.input.keyboard.createCursorKeys();
+    graphics = self.add.graphics();
+    physics = self.physics;
+
+    presenter.drawBoard(drawRect);
+
     snake = new Snake(presenter.getTileDiameter());
     serverInterface = new ServerInterface();
     otherPlayersSnakes = physics.add.group();
@@ -213,10 +222,9 @@ function update() {
         return;
     }
 
-
     let player = snake.getHead();
 
-    if (!presenter.isPlayerInBounds(player)) {
+    if (!presenter.isPlayerInBounds(snake.getHead())) {
         killPlayer();
         return;
     }
