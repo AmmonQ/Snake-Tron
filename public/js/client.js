@@ -236,12 +236,9 @@ function update() {
 
     snake.move();
 
-    let x = player.x;
-    let y = player.y;
-    if (x !== snake.getOldX() || y !== snake.getOldY()) {
-        serverInterface.notifyPlayerMoved({x: player.x, y: player.y});
+    if (snake.hasMoved()) {
+        serverInterface.notifyPlayerMoved({x: snake.getX(), y: snake.getY()});
     }
 
-    snake.setOldPosition(player.x, player.y);
-
+    snake.updatePos();
 }
