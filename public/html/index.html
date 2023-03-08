@@ -3,66 +3,24 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <style>
-            .scores {
-                display: flex;
-                flex-direction: row;
-                font-size: 20px;
-            }
-
-            .blue-score {
-                color: blue;
-                margin-top: 0px;
-                margin-bottom: 5px;
-                margin-left: 0px;
-                margin-right: 20px;
-                
-            }
-
-            .red-score {
-                color: red;
-                margin-top: 0px;
-                margin-bottom: 5px;
-                margin-left: 0px;
-                margin-right: 0px;
-            }
-
-            .title-text {
-                display: flex;
-                width: 100%;
-                justify-content: center;
-                align-items: center;
-
-                font-size: 25px;
-                font-weight: bold;
-                color: black;
-                margin: 0px;
-            }
-
-            .canvas {
-                display: flex;
-                width: 100%;
-                justify-content: center;
-                align-items: center;
-            }
-        </style>
+        <link rel="stylesheet" href="/css/styles.css">
         <title>SNAKETRON</title>
     </head>
     <body>
         <p class="title-text">THE FAMOUS SNAKETRON - FOR THE WIN!</p>
-        <div class="scores">
-            <p id="blue-score" class="blue-score"></p>
-            <p id="red-score" class="red-score"></p>
-        </div>
-        <div class="canvas">
-            <script src="/socket.io/socket.io.js"></script>
-            <script src="//cdn.jsdelivr.net/npm/phaser@3.0.0/dist/phaser.min.js"></script>
-            <script type="module" src="../js/client.js"></script>
-            <script type="module" src="../js/presenter.js"></script>
 
-            <script type="module" src="../js/segment.js"></script>
-            <script type="module" src="../js/snake.js"></script>
-            <script type="module" src="../js/directions.js"></script>
+        <div class="game">
+            <div class="sidebar">
+                <div class="scores">
+                    <p id="blue-score" class="blue-score"></p>
+                    <p id="red-score" class="red-score"></p>
+                </div>
+            </div>
+            <div id="game-canvas" class="canvas">
+                <script src="/socket.io/socket.io.js"></script>
+                <script src="//cdn.jsdelivr.net/npm/phaser@3.0.0/dist/phaser.min.js"></script>
+                <script type="module" src="../js/client.js"></script>
+            </div>
         </div>
     </body>
 </html>

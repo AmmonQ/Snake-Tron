@@ -9,7 +9,7 @@ let serverInterface;
 
 let config = {
     type: Phaser.AUTO,
-    parent: 'phaser-example',
+    parent: document.getElementById("game-canvas"),
     width: presenter.getWidth(),
     height: presenter.getHeight(),
     backgroundColor: presenter.getBgColorStr(),
