@@ -139,6 +139,6 @@ export class Presenter {
 
         funcAddPlayerIcon(snake.getSegments());
 
-        snake.getHead().direction = snake.getNextDirection();
+        snake.setDirection(snake.getNextDirection());
     }
 }

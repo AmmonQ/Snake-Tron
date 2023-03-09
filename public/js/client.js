@@ -1,5 +1,4 @@
 import { Presenter } from './presenter.js'
-import { Segment } from "./segment.js";
 import { ServerInterface }  from "./serverInterface.js"
 import { Snake } from "./snake.js"
 
@@ -9,7 +8,7 @@ let serverInterface;
 
 let config = {
     type: Phaser.AUTO,
-    parent: document.getElementById("game-canvas"),
+    parent: getElement("game-canvas"),
     width: presenter.getWidth(),
     height: presenter.getHeight(),
     backgroundColor: presenter.getBgColorStr(),
@@ -75,10 +74,10 @@ function preload() {
         'playerIcon': 'pink_snake_tongue_pixel.png',
         'otherPlayer': 'pink_snake_pixel.png',
         'apple': 'apple.png',
-        'greenSnakeHead': 'g_snake_head.png',
         'foeSnakeHead': 'o_snake_head.png',
-        'foeSnakeTail': 'o_snake_tail.png',
         'foeSnakeBody': 'o_snake_body.png',
+        'foeSnakeTail': 'o_snake_tail.png',
+        'greenSnakeHead': 'g_snake_head.png',
         'greenSnakeBody': 'g_snake_body.png',
         'greenSnakeTail': 'g_snake_tail.png'
     };
@@ -220,11 +219,12 @@ function addPlayerIcon() {
     }
 
     snake.addBodySegment(addImage);
-    addOverlap(snake.getHead(), snake.getLastSegment().getLast(), killPlayer);
+
     presenter.setAppleCollected(false);
 }
 
 function killPlayer() {
+    console.log("killing player");
 
     snake.destroy();
     serverInterface.notifyPlayerDied();
@@ -237,19 +237,23 @@ function update() {
         return;
     }
 
-    let player = snake.getHead();
-
     if (!presenter.isPlayerInBounds(snake.getHead())) {
+        console.log("Player is out of bounds");
         killPlayer();
         return;
     }
 
     // set direction and position
-    let nextDir = presenter.getPlayerNextDirection(cursors, player.direction);
+    let nextDir = presenter.getPlayerNextDirection(cursors, snake.getDirection());
     snake.setNextDirection(nextDir);
     presenter.setSnakeDirection(snake, addPlayerIcon);
 
     snake.move();
+
+    if (snake.isOverlapping()) {
+        killPlayer();
+        return;
+    }
 
     if (snake.hasMoved()) {
         serverInterface.notifyPlayerMoved(snake.getPos());
