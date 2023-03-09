@@ -27,7 +27,7 @@ let config = {
     }
 };
 
-let game = new Phaser.Game(config);
+let phaser = new Phaser.Game(config);
 
 let cursors;
 let graphics;
@@ -108,8 +108,6 @@ function moveOtherPlayer(playerInfo) {
         }
     });
 }
-
-// TODO: Should be in Server
 function updateScores(scores) {
     view.setBlueScoreText("Blue: " + scores.blue);
     view.setRedScoreText("Red: " + scores.red);
