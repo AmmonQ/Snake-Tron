@@ -14,10 +14,8 @@ export class Images {
     static PLAYER_BODY = 'greenSnakeBody';
     static PLAYER_TAIL = 'greenSnakeTail';
 
-    constructor() {}
-
-    getImages() {
-        return [
+    constructor() {
+        this.images = [
             new Image(Images.BACKGROUND, 'grass.png'),
             new Image(Images.PLAYER_ICON, 'pink_snake_tongue_pixel.png'),
             new Image(Images.OTHER_PLAYER, 'pink_snake_pixel.png'),
@@ -29,5 +27,9 @@ export class Images {
             new Image(Images.PLAYER_BODY, 'g_snake_body.png'),
             new Image(Images.PLAYER_TAIL, 'g_snake_tail.png')
         ];
+    }
+
+    getImages() {
+        return this.images;
     }
 }
