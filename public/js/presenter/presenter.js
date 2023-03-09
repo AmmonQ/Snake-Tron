@@ -1,4 +1,4 @@
-import {Directions} from "./directions.js";
+import {Directions} from "../model/directions.js";
 
 export class Presenter {
 

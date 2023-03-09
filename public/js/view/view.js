@@ -1,9 +1,13 @@
+import {Images} from "./images.js";
+
 export class View {
 
-    constructor(gamePtr, graphics, physics) {
+    constructor(gamePtr) {
         this.gamePtr = gamePtr;
-        this.graphics = graphics;
-        this.physics = physics;
+        this.graphics = gamePtr.add.graphics();
+        this.physics = gamePtr.physics;
+
+        this.images = new Images();
     }
 
     drawRect(x1, y1, x2, y2, color, alpha) {
@@ -50,5 +54,16 @@ export class View {
     initScoreText() {
         this.setBlueScoreText('0');
         this.setRedScoreText('0');
+    }
+
+    loadImage(imageName, imagePath) {
+        this.gamePtr.load.image(imageName, imagePath);
+    }
+
+    loadImages() {
+
+        for (let image of this.images.getImages()) {
+            this.loadImage(image.name, Images.DIR_NAME + image.fileName);
+        }
     }
 }
