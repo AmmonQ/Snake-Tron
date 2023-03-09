@@ -1,5 +1,5 @@
-import {Directions} from "./directions.js";
-import {Segment} from "./segment.js";
+import { Directions } from "./directions.js";
+import { Segment } from "./segment.js";
 
 export class Snake {
 

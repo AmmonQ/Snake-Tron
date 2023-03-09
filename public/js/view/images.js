@@ -1,4 +1,7 @@
+import { Image } from "../model/image.js";
+
 export class Images {
+
     static DIR_NAME = 'assets/';
     static BACKGROUND = 'background';
     static PLAYER_ICON = 'playerIcon';
@@ -15,16 +18,16 @@ export class Images {
 
     getImages() {
         return [
-            { name: Images.BACKGROUND, fileName: 'grass.png' },
-            { name: Images.PLAYER_ICON, fileName: 'pink_snake_tongue_pixel.png' },
-            { name: Images.OTHER_PLAYER, fileName: 'pink_snake_pixel.png' },
-            { name: Images.APPLE, fileName: 'apple.png' },
-            { name: Images.ENEMY_HEAD, fileName: 'o_snake_head.png' },
-            { name: Images.ENEMY_BODY, fileName: 'o_snake_body.png' },
-            { name: Images.ENEMY_TAIL, fileName: 'o_snake_tail.png' },
-            { name: Images.PLAYER_HEAD, fileName: 'g_snake_head.png' },
-            { name: Images.PLAYER_BODY, fileName: 'g_snake_body.png' },
-            { name: Images.PLAYER_TAIL, fileName: 'g_snake_tail.png' }
+            new Image(Images.BACKGROUND, 'grass.png'),
+            new Image(Images.PLAYER_ICON, 'pink_snake_tongue_pixel.png'),
+            new Image(Images.OTHER_PLAYER, 'pink_snake_pixel.png'),
+            new Image(Images.APPLE, 'apple.png'),
+            new Image(Images.ENEMY_HEAD, 'o_snake_head.png'),
+            new Image(Images.ENEMY_BODY, 'o_snake_body.png'),
+            new Image(Images.ENEMY_TAIL, 'o_snake_tail.png'),
+            new Image(Images.PLAYER_HEAD, 'g_snake_head.png'),
+            new Image(Images.PLAYER_BODY, 'g_snake_body.png'),
+            new Image(Images.PLAYER_TAIL, 'g_snake_tail.png')
         ];
     }
 }

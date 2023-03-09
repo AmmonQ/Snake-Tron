@@ -1,4 +1,4 @@
-import {Images} from "./images.js";
+import { Images } from "./images.js";
 
 export class View {
 
@@ -63,7 +63,7 @@ export class View {
     loadImages() {
 
         for (let image of this.images.getImages()) {
-            this.loadImage(image.name, Images.DIR_NAME + image.fileName);
+            this.loadImage(image.getName(), Images.DIR_NAME + image.getFileName());
         }
     }
 }
