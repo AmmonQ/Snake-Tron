@@ -1,6 +1,7 @@
 import { Presenter } from './presenter.js'
 import { ServerInterface }  from "./serverInterface.js"
 import { Snake } from "./snake.js"
+import { View } from "./view.js"
 
 
 let presenter = new Presenter();
@@ -8,7 +9,7 @@ let serverInterface;
 
 let config = {
     type: Phaser.AUTO,
-    parent: getElement("game-canvas"),
+    parent: document.getElementById("game-canvas"),
     width: presenter.getWidth(),
     height: presenter.getHeight(),
     backgroundColor: presenter.getBgColorStr(),
@@ -31,58 +32,15 @@ let game = new Phaser.Game(config);
 let cursors;
 let graphics;
 let physics;
+let view;
 let self;
-
 
 let apple;
 let snake;
 let otherPlayersSnakes;
 
-function drawRect(x1, y1, x2, y2, color, alpha) {
-    graphics.fillStyle(color, alpha);
-    graphics.fillRect(x1, y1, x2, y2);
-}
-
-function addImage(position, imageName) {
-    return physics.add.image(position.x, position.y, imageName).setOrigin(0.0, 0.0);
-}
-
-function addSprite(position, imageName) {
-    return self.add.sprite(position.x, position.y, imageName).setOrigin(0.0, 0.0);
-}
-
-function addOverlap(item1, item2, callbackFunc) {
-    physics.add.overlap(item1, item2, callbackFunc, null, self);
-}
-
-function setIconColor(icon,  color) {
-    icon.setTint(color);
-}
-
 function loadImage(imageName, imagePath) {
     self.load.image(imageName, imagePath);
-}
-
-function getElement(idStr) {
-    return document.getElementById(idStr);
-}
-
-function setText(idStr, text) {
-    getElement(idStr).textContent = text;
-}
-
-function setBlueScoreText(text) {
-    setText("blue-score", text);
-}
-
-function setRedScoreText(text) {
-    setText("red-score", text);
-}
-
-function initScoreText() {
-
-    setBlueScoreText('0');
-    setRedScoreText('0');
 }
 
 function preload() {
@@ -111,15 +69,15 @@ function preload() {
 
 function addOtherPlayers(playerInfo) {
 
-    const otherPlayer = addSprite(playerInfo.position, 'otherPlayer');
+    const otherPlayer = view.addSprite(playerInfo.position, 'otherPlayer');
     otherPlayer.id = playerInfo.id;
     otherPlayersSnakes.add(otherPlayer);
 }
 
 function addPlayer(playerInfo) {
 
-    snake.addHeadSegment(playerInfo.position, addImage);
-    snake.setColor(presenter.convertToColor(playerInfo.team), setIconColor);
+    snake.addHeadSegment(playerInfo.position, view);
+    snake.setColor(presenter.convertToColor(playerInfo.team), view);
 
 }
 
@@ -153,8 +111,8 @@ function moveOtherPlayer(playerInfo) {
 
 // TODO: Should be in Server
 function updateScores(scores) {
-    setBlueScoreText("Blue: " + scores.blue);
-    setRedScoreText("Red: " + scores.red);
+    view.setBlueScoreText("Blue: " + scores.blue);
+    view.setRedScoreText("Red: " + scores.red);
 }
 
 // TODO: Should be in Server
@@ -164,9 +122,9 @@ function updateApple(appleLocation) {
         apple.destroy();
     }
 
-    apple = addImage(appleLocation, 'apple');
+    apple = view.addImage(appleLocation, 'apple');
 
-    addOverlap(snake.getHead(), apple, function() {
+    view.addOverlap(snake.getHead(), apple, function() {
         presenter.setAppleCollected(true);
         serverInterface.notifyAppleCollected();
     })
@@ -178,13 +136,15 @@ function create() {
     graphics = self.add.graphics();
     physics = self.physics;
 
-    presenter.drawBoard(drawRect);
+    view = new View(self, graphics, physics);
+
+    presenter.drawBoard(view);
 
     snake = new Snake(presenter.getTileDiameter());
     serverInterface = new ServerInterface();
     otherPlayersSnakes = physics.add.group();
 
-    initScoreText();
+    view.initScoreText();
 
     serverInterface.getSocket().on('currentPlayers', addPlayers);
     serverInterface.getSocket().on('newPlayer', addOtherPlayers);
@@ -200,7 +160,7 @@ function addPlayerIcon() {
         return;
     }
 
-    snake.addBodySegment(addImage);
+    snake.addBodySegment(view);
 
     presenter.setAppleCollected(false);
 }

@@ -14,7 +14,6 @@ export class Snake {
         this.direction = "none";
         this.nextDirection = "none";
         this.color = "blue";
-        this.funcSetIconColor = (icon, color) => {};
         this.position = {
             x: -1,
             y: -1
@@ -139,30 +138,30 @@ export class Snake {
         };
     }
 
-    addSegment(insertPos, funcAddImage) {
+    addSegment(insertPos, view) {
 
         let segment = new Segment();
 
         for (let i = 0; i < this.NUM_ICONS_PER_SEGMENTS; i++) {
 
             let newPosition = this.getNewPos(insertPos, i * this.getMovDelta());
-            segment.addIcon(funcAddImage(newPosition, this.SEGMENT_IMAGE_TYPE));
+            segment.addIcon(view.addImage(newPosition, this.SEGMENT_IMAGE_TYPE));
         }
 
         this.getSegments().push(segment);
     }
 
 
-    addHeadSegment(position, funcAddImage) {
-        this.addSegment(position, funcAddImage);
+    addHeadSegment(position, view) {
+        this.addSegment(position, view);
         this.getLastSegment().getFirst().destroy();
-        this.getLastSegment().setFirst(funcAddImage(position, this.HEAD_IMAGE_TYPE));
+        this.getLastSegment().setFirst(view.addImage(position, this.HEAD_IMAGE_TYPE));
     }
 
 
-    addBodySegment(funcAddImage) {
-        this.addSegment(this.getLast(), funcAddImage);
-        this.getLastSegment().setColor(this.color, this.funcSetIconColor);
+    addBodySegment(view) {
+        this.addSegment(this.getLast(), view);
+        this.getLastSegment().setColor(this.color, view);
     }
 
     isSegmentOverlapping(segment) {
@@ -215,14 +214,13 @@ export class Snake {
         this.nextDirection = "none";
     }
 
-    setColor(color, funcSetIconColor) {
+    setColor(color, view) {
 
         for (let i = 0; i < this.getLength(); i++) {
-            this.getSegmentsAt(i).setColor(color, funcSetIconColor);
+            this.getSegmentsAt(i).setColor(color, view);
         }
 
         this.color = color;
-        this.funcSetIconColor = funcSetIconColor;
     }
 
     updateDirection() {
