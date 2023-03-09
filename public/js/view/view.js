@@ -66,4 +66,8 @@ export class View {
             this.loadImage(image.getName(), Images.DIR_NAME + image.getFileName());
         }
     }
+
+    addPhysicsGroup() {
+        return this.physics.add.group();
+    }
 }
