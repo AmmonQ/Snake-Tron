@@ -63,6 +63,28 @@ function loadImage(imageName, imagePath) {
     self.load.image(imageName, imagePath);
 }
 
+function getElement(idStr) {
+    return document.getElementById(idStr);
+}
+
+function setText(idStr, text) {
+    getElement(idStr).textContent = text;
+}
+
+function setBlueScoreText(text) {
+    setText("blue-score", text);
+}
+
+function setRedScoreText(text) {
+    setText("red-score", text);
+}
+
+function initScoreText() {
+
+    setBlueScoreText('0');
+    setRedScoreText('0');
+}
+
 function preload() {
 
     self = this;
@@ -87,55 +109,32 @@ function preload() {
     }
 }
 
-
-function getElement(idStr) {
-    return document.getElementById(idStr);
-}
-
-function setText(idStr, text) {
-    getElement(idStr).textContent = text;
-}
-
-function setBlueScoreText(text) {
-    setText("blue-score", text);
-}
-
-function setRedScoreText(text) {
-    setText("red-score", text);
-}
-
-function initScoreText() {
-
-    setBlueScoreText('0');
-    setRedScoreText('0');
-}
-
-function addOtherPlayers(self, playerInfo) {
+function addOtherPlayers(playerInfo) {
 
     const otherPlayer = addSprite(playerInfo.position, 'otherPlayer');
     otherPlayer.id = playerInfo.id;
     otherPlayersSnakes.add(otherPlayer);
 }
 
-function addPlayer(self, playerInfo) {
+function addPlayer(playerInfo) {
 
     snake.addHeadSegment(playerInfo.position, addImage);
     snake.setColor(presenter.convertToColor(playerInfo.team), setIconColor);
 
 }
 
-function addPlayers(self, players) {
+function addPlayers(players) {
 
     Object.keys(players).forEach(function (id) {
         if (players[id].id === serverInterface.getSocketID()) {
-            addPlayer(self, players[id]);
+            addPlayer(players[id]);
         } else {
-            addOtherPlayers(self, players[id]);
+            addOtherPlayers(players[id]);
         }
     });
 }
 
-function disconnect(self, playerId) {
+function disconnect(playerId) {
     otherPlayersSnakes.getChildren().forEach(function (otherPlayer) {
         if (playerId === otherPlayer.id) {
             otherPlayer.destroy();
@@ -143,7 +142,7 @@ function disconnect(self, playerId) {
     });
 }
 
-function moveOtherPlayer(self, playerInfo) {
+function moveOtherPlayer(playerInfo) {
 
     otherPlayersSnakes.getChildren().forEach(function (otherPlayer) {
         if (playerInfo.id === otherPlayer.id) {
@@ -153,13 +152,13 @@ function moveOtherPlayer(self, playerInfo) {
 }
 
 // TODO: Should be in Server
-function updateScores(self, scores) {
+function updateScores(scores) {
     setBlueScoreText("Blue: " + scores.blue);
     setRedScoreText("Red: " + scores.red);
 }
 
 // TODO: Should be in Server
-function updateApple(self, appleLocation) {
+function updateApple(appleLocation) {
 
     if (apple) {
         apple.destroy();
@@ -185,31 +184,14 @@ function create() {
     serverInterface = new ServerInterface();
     otherPlayersSnakes = physics.add.group();
 
-    initScoreText(self);
+    initScoreText();
 
-    serverInterface.getSocket().on('currentPlayers', function (players) {
-        addPlayers(self, players);
-    });
-
-    serverInterface.getSocket().on('newPlayer', function (playerInfo) {
-        addOtherPlayers(self, playerInfo);
-    });
-
-    serverInterface.getSocket().on('disconnected', function (playerId) {
-        disconnect(self, playerId);
-    });
-
-    serverInterface.getSocket().on('playerMoved', function (playerInfo) {
-        moveOtherPlayer(self, playerInfo);
-    });
-
-    serverInterface.getSocket().on('scoreUpdate', function (scores) {
-        updateScores(self, scores);
-    });
-
-    serverInterface.getSocket().on('appleLocation', function (appleLocation) {
-        updateApple(self, appleLocation);
-    });
+    serverInterface.getSocket().on('currentPlayers', addPlayers);
+    serverInterface.getSocket().on('newPlayer', addOtherPlayers);
+    serverInterface.getSocket().on('disconnected', disconnect);
+    serverInterface.getSocket().on('playerMoved', moveOtherPlayer);
+    serverInterface.getSocket().on('scoreUpdate', updateScores);
+    serverInterface.getSocket().on('appleLocation', updateApple);
 }
 
 function addPlayerIcon() {

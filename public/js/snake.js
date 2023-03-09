@@ -224,4 +224,8 @@ export class Snake {
         this.color = color;
         this.funcSetIconColor = funcSetIconColor;
     }
+
+    updateDirection() {
+        this.setDirection(this.getNextDirection());
+    }
 }
