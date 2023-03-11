@@ -49,6 +49,10 @@ function addPlayer(playerInfo) {
     game.getSnake().addHeadSegment(playerInfo.position, game.getView());
     game.getSnake().setColor(game.getPresenter().convertToColor(playerInfo.team), game.getView());
 
+    game.getView().addCollision(game.getSnake().getHead(), game.getOtherSnakes(), function() {
+        game.killPlayer();
+        console.log("players collided");
+    });
 }
 
 function addPlayers(players) {
@@ -98,7 +102,6 @@ function updateApple(appleLocation) {
 }
 
 function create() {
-
     game.getPresenter().drawBoard(game.getView());
 
     game.setServerInterface(new ServerInterface());

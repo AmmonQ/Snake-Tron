@@ -27,6 +27,10 @@ export class View {
         this.physics.add.overlap(item1, item2, callbackFunc, null, this.gamePtr);
     }
 
+    addCollision(item1, item2, callbackFunc) {
+        this.physics.add.collider(item1, item2, callbackFunc, null, this.gamePtr);
+    }
+
     setIconColor(icon,  color) {
         icon.setTint(color);
     }
