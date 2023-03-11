@@ -1,19 +1,26 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
     <head>
-        <meta charset="utf-8">
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="/css/styles.css">
+        <title>SNAKETRON</title>
     </head>
     <body>
-        <p>THE FAMOUS SnakeTron - FOR THE WIN!</p>
-        <script src="/socket.io/socket.io.js"></script>
-        <script src="//cdn.jsdelivr.net/npm/phaser@3.0.0/dist/phaser.min.js"></script>
-        <script type="module" src="../js/client.js"></script>
-        <script type="module" src="../js/presenter.js"></script>
+        <p class="title-text">THE FAMOUS SNAKETRON - FOR THE WIN!</p>
 
-        <script type="module" src="../js/segment.js"></script>
-        <script type="module" src="../js/snake.js"></script>
-        <script type="module" src="../js/directions.js"></script>
-
+        <div class="game">
+            <div class="sidebar">
+                <div class="scores">
+                    <p id="blue-score" class="blue-score"></p>
+                    <p id="red-score" class="red-score"></p>
+                </div>
+            </div>
+            <div id="game-canvas" class="canvas">
+                <script src="/socket.io/socket.io.js"></script>
+                <script src="//cdn.jsdelivr.net/npm/phaser@3.0.0/dist/phaser.min.js"></script>
+                <script type="module" src="../js/client.js"></script>
+            </div>
+        </div>
     </body>
 </html>

@@ -2,6 +2,7 @@ export class Segment {
 
     constructor() {
         this.icons = [];
+        this.overlap = false;
     }
 
     addIcon(icon) {
@@ -10,6 +11,14 @@ export class Segment {
 
     getIcons() {
         return this.icons;
+    }
+
+    hasOverlap() {
+        return this.overlap;
+    }
+
+    setOverlap(overlap) {
+        this.overlap = overlap;
     }
 
     getFirst() {
@@ -57,10 +66,10 @@ export class Segment {
         this.getFirst().setPosition(newPosition.x, newPosition.y);
     }
 
-    setColor(color, setIconColor) {
+    setColor(color, view) {
 
         for (let i = 0; i < this.icons.length; i++) {
-            setIconColor(this.icons[i], color);
+            view.setIconColor(this.icons[i], color);
         }
     }
 }

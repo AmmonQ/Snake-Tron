@@ -1,33 +1,25 @@
-import {Directions} from "./directions.js";
+import {Directions} from "../model/directions.js";
 
 export class Presenter {
+
+    static TILE_DIAMETER = 32;
+    static BORDER_SIZE = 32;
+    static NUM_ROWS = 20;
+    static NUM_COLS = 30;
+    static WIDTH = Presenter.TILE_DIAMETER * Presenter.NUM_COLS + Presenter.BORDER_SIZE * 2;
+    static HEIGHT = Presenter.TILE_DIAMETER * Presenter.NUM_ROWS + Presenter.BORDER_SIZE * 2;
+
+    static BG_COLOR_STR = '#009C29'
+
 
     constructor() {
 
         this.BLUE = 0x0000FF;
         this.RED = 0xFF0000;
-        this.BG_COLOR_STR = '#009C29';
-        this.BORDER_SIZE = 32;
 
         this.TILE_DIAMETER = 32;
-        this.NUM_ROWS = 20;
-        this.NUM_COLS = 30;
-        this.WIDTH = this.TILE_DIAMETER * this.NUM_COLS + this.BORDER_SIZE * 2;
-        this.HEIGHT = this.TILE_DIAMETER * this.NUM_ROWS + this.BORDER_SIZE * 2;
 
         this.appleCollected = false;
-    }
-
-    getWidth() {
-        return this.WIDTH;
-    }
-
-    getHeight() {
-        return this.HEIGHT;
-    }
-
-    getBgColorStr() {
-        return this.BG_COLOR_STR;
     }
 
     getBlue() {
@@ -36,10 +28,6 @@ export class Presenter {
 
     getRed() {
         return this.RED;
-    }
-
-    getBorderSize() {
-        return this.BORDER_SIZE;
     }
 
     getTileDiameter() {
@@ -63,34 +51,34 @@ export class Presenter {
         }
     }
 
-    drawBorder(funcDrawRect, ALPHA) {
+    drawBorder(view, ALPHA) {
 
         const BORDER_COLOR = 0x004C29;
 
-        funcDrawRect(0, 0, this.getWidth(), this.getBorderSize(), BORDER_COLOR, ALPHA);
-        funcDrawRect(0, 0, this.getBorderSize(), this.getHeight(), BORDER_COLOR, ALPHA);
-        funcDrawRect(this.getWidth() - this.getBorderSize(), 0, this.getBorderSize(), this.getHeight(), BORDER_COLOR, ALPHA);
-        funcDrawRect(0, this.getHeight() - this.getBorderSize(), this.getWidth(), this.getBorderSize(), BORDER_COLOR, ALPHA);
+        view.drawRect(0, 0, Presenter.WIDTH, Presenter.BORDER_SIZE, BORDER_COLOR, ALPHA);
+        view.drawRect(0, 0, Presenter.BORDER_SIZE, Presenter.HEIGHT, BORDER_COLOR, ALPHA);
+        view.drawRect(Presenter.WIDTH - Presenter.BORDER_SIZE, 0, Presenter.BORDER_SIZE, Presenter.HEIGHT, BORDER_COLOR, ALPHA);
+        view.drawRect(0, Presenter.HEIGHT - Presenter.BORDER_SIZE, Presenter.WIDTH, Presenter.BORDER_SIZE, BORDER_COLOR, ALPHA);
     }
 
-    drawBoard(funcDrawRect) {
+    drawBoard(view) {
 
         const FG_COLOR = 0x008C29;
         const ALPHA = 1.0;
 
         let previous = false;
 
-        for (let col = this.getBorderSize(); col < this.getHeight() - this.getBorderSize(); col += this.getTileDiameter()) {
-            for (let row = this.getBorderSize(); row < this.getWidth() - this.getBorderSize(); row += this.getTileDiameter()) {
+        for (let col = Presenter.BORDER_SIZE; col < Presenter.HEIGHT - Presenter.BORDER_SIZE; col += this.getTileDiameter()) {
+            for (let row = Presenter.BORDER_SIZE; row < Presenter.WIDTH - Presenter.BORDER_SIZE; row += this.getTileDiameter()) {
                 if (!previous) {
-                    funcDrawRect(row, col, this.getTileDiameter(), this.getTileDiameter(), FG_COLOR, ALPHA);
+                    view.drawRect(row, col, this.getTileDiameter(), this.getTileDiameter(), FG_COLOR, ALPHA);
                 }
                 previous = !previous;
             }
             previous = !previous;
         }
 
-        this.drawBorder(funcDrawRect, ALPHA);
+        this.drawBorder(view, ALPHA);
     }
 
     getPlayerNextDirection(cursors, playerDirection) {
@@ -110,13 +98,13 @@ export class Presenter {
 
     isPlayerInBounds(player) {
 
-        if (player.x < this.getBorderSize()) {
+        if (player.x < Presenter.BORDER_SIZE) {
             return false;
-        } else if (player.x > (this.getWidth() - this.getBorderSize() * 2)) {
+        } else if (player.x > (Presenter.WIDTH - Presenter.BORDER_SIZE * 2)) {
             return false;
-        } else if (player.y < this.getBorderSize()) {
+        } else if (player.y < Presenter.BORDER_SIZE) {
             return false;
-        } else if (player.y > (this.getHeight() - this.getBorderSize() * 2)) {
+        } else if (player.y > (Presenter.HEIGHT - Presenter.BORDER_SIZE * 2)) {
             return false;
         }
 
@@ -131,14 +119,14 @@ export class Presenter {
         return (this.isCoordinateAligned(position.x) && this.isCoordinateAligned(position.y));
     }
 
-    setSnakeDirection(snake, funcAddPlayerIcon) {
+    setSnakeDirection(snake, game) {
 
         if (!this.areCoordinatesAligned(snake.getHead())) {
             return;
         }
 
-        funcAddPlayerIcon(snake.getSegments());
+        game.addPlayerIcon(snake.getSegments());
 
-        snake.getHead().direction = snake.getNextDirection();
+        snake.updateDirection();
     }
 }

@@ -1,5 +1,5 @@
-import {Directions} from "./directions.js";
-import {Segment} from "./segment.js";
+import { Directions } from "./directions.js";
+import { Segment } from "./segment.js";
 
 export class Snake {
 
@@ -8,13 +8,12 @@ export class Snake {
         this.NUM_ICONS_PER_SEGMENTS = 8;
         this.SEGMENT_IMAGE_TYPE = 'greenSnakeBody';
         this.HEAD_IMAGE_TYPE = 'greenSnakeHead';
-        this.movDelta = tileDiameter / this.NUM_ICONS_PER_SEGMENTS;
-
+        this.TILE_DIAMETER = tileDiameter;
+        this.movDelta = this.TILE_DIAMETER / this.NUM_ICONS_PER_SEGMENTS;
         this.segments = [];
-        this.direction = Directions.LEFT;
-        this.nextDirection;
+        this.direction = "none";
+        this.nextDirection = "none";
         this.color = "blue";
-        this.funcSetIconColor = (icon, color) => {};
         this.position = {
             x: -1,
             y: -1
@@ -43,6 +42,10 @@ export class Snake {
 
     getSegments() {
         return this.segments;
+    }
+
+    getSegmentsAt(i) {
+        return this.getSegments()[i];
     }
 
     getLength() {
@@ -74,6 +77,14 @@ export class Snake {
         this.oldPosition.y = y;
     }
 
+    getX() {
+        return this.getHead().x;
+    }
+
+    getY() {
+        return this.getHead().y
+    }
+
     getOldX() {
         return this.oldPosition.x;
     }
@@ -83,7 +94,22 @@ export class Snake {
     }
 
     getLastSegment() {
-        return this.getSegments()[this.getLength() - 1];
+        return this.getSegmentsAt(this.getLength() - 1);
+    }
+
+    updateOldPos() {
+        this.setOldPosition(this.getX(), this.getY());
+    }
+
+    hasMoved() {
+        return this.getX() !== this.getOldX() || this.getY() !== this.getOldY();
+    }
+
+    getPos() {
+        return {
+            x: this.getX(),
+            y: this.getY()
+        };
     }
 
     getNewPos(position, delta) {
@@ -91,7 +117,7 @@ export class Snake {
         let newX = position.x;
         let newY = position.y;
 
-        switch (position.direction) {
+        switch (this.getDirection()) {
             case Directions.LEFT:
                 newX -= delta;
                 break;
@@ -112,39 +138,66 @@ export class Snake {
         };
     }
 
-    addSegment(insertPos, funcAddImage) {
+    addSegment(insertPos, view) {
 
         let segment = new Segment();
 
         for (let i = 0; i < this.NUM_ICONS_PER_SEGMENTS; i++) {
 
             let newPosition = this.getNewPos(insertPos, i * this.getMovDelta());
-            segment.addIcon(funcAddImage(newPosition, this.SEGMENT_IMAGE_TYPE));
+            segment.addIcon(view.addImage(newPosition, this.SEGMENT_IMAGE_TYPE));
         }
 
         this.getSegments().push(segment);
     }
 
 
-    addHeadSegment(position, funcAddImage) {
-        this.addSegment(position, funcAddImage);
+    addHeadSegment(position, view) {
+        this.addSegment(position, view);
         this.getLastSegment().getFirst().destroy();
-        this.getLastSegment().setFirst(funcAddImage(position, this.HEAD_IMAGE_TYPE));
+        this.getLastSegment().setFirst(view.addImage(position, this.HEAD_IMAGE_TYPE));
     }
 
 
-    addBodySegment(funcAddImage) {
-        this.addSegment(this.getLast(), funcAddImage);
-        this.getLastSegment().setColor(this.color, this.funcSetIconColor);
+    addBodySegment(view) {
+        this.addSegment(this.getLast(), view);
+        this.getLastSegment().setColor(this.color, view);
+    }
+
+    isSegmentOverlapping(segment) {
+
+        let head = this.getHead();
+        let segmentFirst = segment.getFirst();
+
+        if (Math.abs(head.x - segmentFirst.x) >= this.TILE_DIAMETER) {
+            return false;
+        } else if (Math.abs(head.y - segmentFirst.y) >= this.TILE_DIAMETER) {
+            return false;
+        }
+
+        return true;
+    }
+
+    isOverlapping() {
+
+        // SKIP the head and the segment immediately behind the head.
+        // You can't overlap with the second segment.
+        for (let i = 2; i < this.getLength(); i++) {
+            if (this.isSegmentOverlapping(this.getSegmentsAt(i))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     move() {
 
-        for (let i = this.getSegments().length - 1; i > 0; i--) {
-            this.getSegments()[i].move(this.getSegments()[i - 1].getLast());
+        for (let i = this.getLength() - 1; i > 0; i--) {
+            this.getSegmentsAt(i).move(this.getSegmentsAt(i - 1).getLast());
         }
 
-        this.getSegments()[0].move(this.getHead());
+        this.getSegmentsAt(0).move(this.getHead());
 
         let newPos = this.getNewPos(this.getHead(), this.getMovDelta());
 
@@ -154,18 +207,23 @@ export class Snake {
     destroy() {
 
         for (let i = 0; i < this.getLength(); i++) {
-            this.getSegments()[i].destroy();
+            this.getSegmentsAt(i).destroy();
         }
         this.getSegments().length = 0;
+        this.direction = "none";
+        this.nextDirection = "none";
     }
 
-    setColor(color, funcSetIconColor) {
+    setColor(color, view) {
 
         for (let i = 0; i < this.getLength(); i++) {
-            this.getSegments()[i].setColor(color, funcSetIconColor);
+            this.getSegmentsAt(i).setColor(color, view);
         }
 
         this.color = color;
-        this.funcSetIconColor = funcSetIconColor;
+    }
+
+    updateDirection() {
+        this.setDirection(this.getNextDirection());
     }
 }

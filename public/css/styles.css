@@ -1,0 +1,52 @@
+.canvas {
+    display: flex;
+    flex: 6;
+    justify-content: center;
+    align-items: center;
+    background-color: #004C29;
+}
+
+.sidebar {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    border: solid 1px black;
+}
+
+.scores {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0px 10px 0px; /* top | right | bottom | left */
+}
+
+.blue-score {
+    color: blue;
+    margin: 0px 5px 0px 5px; /* top | right | bottom | left */
+}
+
+.red-score {
+    color: red;
+    margin: 0px 5px 0px 5px; /* top | right | bottom | left */
+}
+
+.title-text {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+    margin: 20px 0px 20px 0px; /* top | right | bottom | left */
+}
+
+.game {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    border: solid 1px black;
+}
