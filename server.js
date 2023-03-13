@@ -5,7 +5,7 @@ let io = require('socket.io') (server);
 
 // let coordinateJS = require('./public/js/model/coordinate.js');
 // let appleJS = require('./public/js/model/apple.js');
-// let playerJS = require('./public/js/model/player.js');
+// let JS = require('./public/js/model/player.js');
 
 let coordinateJS = require('./shared/coordinate.js');
 let appleJS = require('./shared/apple.js');
@@ -86,7 +86,7 @@ io.on('connection', function (socket) {
             console.log("TEAM NOT RECOGNIZED!");
         }
 
-        setAppleCoordinates()
+        setAppleCoordinates(players[socket.id])
 
         io.emit('appleLocation', apple.getPosition());
         io.emit('scoreUpdate', scores);
@@ -109,8 +109,36 @@ server.listen(8081, function () {
 });
 
 // This is what the server should do, make decisions and send information about the decision to clients
-function setAppleCoordinates() {
-    apple.setPosition(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
+function setAppleCoordinates(player) {
+    var appleXPos = getRandomX();
+    var appleYPos = getRandomY();
+    var playerXPos = player.position.getX();
+    var playerYPos = player.position.getY();
+
+    // var segments = playerYPos[socket.id].getSegments();
+    for (i = appleXPos; i < NUM_COLS*32; i = addOneToX(i)) {
+        for (j = appleYPos; j < NUM_ROWS*32; j = addOneToY(j)) {
+            // console.log("Inside j")
+            // console.log("Inside of set position i - j: " + i.toString() + " - " + j.toString() + "\n");
+            // console.log("Inside of set position x - y: " + playerXPos.toString() + " - " + playerYPos.toString() + "\n");
+            if (i === playerXPos && j === playerYPos/* || isOverlappingWithApple(appleXPos, appleYPos, segments)*/) {
+                // console.log("True!! i - j: " + i.toString() + " - " + j.toString() + "\n");
+                apple.setPosition(new coordinateJS.Coordinate(i, j));
+                return;
+            }
+        }
+    }
+
+    // apple.setPosition(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
+}
+
+function isOverlappingWithApple(appleXPos, appleYPos, segments) {
+    for (segment in segments) {
+        if (segment.getFirst().getX() === appleXPos && segment.getFirst().getY() === appleYPos) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function getRandomTeam() {
@@ -123,6 +151,14 @@ function getRandomX() {
 
 function getRandomY() {
     return (getRandomCoordinate(NUM_ROWS) * ROW_COL_SIZE) + BORDER_SIZE;
+}
+
+function addOneToX(xPos) {
+    return (((xPos * NUM_COLS) + ROW_COL_SIZE) % NUM_COLS) + BORDER_SIZE;
+}
+
+function addOneToY(yPos) {
+    return (((yPos * NUM_ROWS) + ROW_COL_SIZE) % NUM_ROWS) + BORDER_SIZE;
 }
 
 function getRandomCoordinate(scale) {
