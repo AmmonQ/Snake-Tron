@@ -25,6 +25,7 @@ let scores = {
 };
 
 let players = {};
+let clientSnakes = {};
 
 let apple = new appleJS.Apple(
     new coordinateJS.Coordinate(getRandomX(), getRandomY())
@@ -70,11 +71,23 @@ io.on('connection', function (socket) {
         io.emit('playerMoved', players[socket.id]);
     });
 
-    socket.on('appleCollected', function () {
+    socket.on('appleCollected', function (data) {
+
+        let clientSnake = data.snake;
+        let segments = clientSnake.segments;
+        let socketID = data.socketID;
+
+        console.log("socketID: " + socketID);
+        console.log("clientSnake: " + clientSnake);
+        console.log("segments: " + segments);
+        console.log("length: " + segments.length);
+        console.log("headX: " + segments[0].icons[0].x);
+        console.log("headY: " + segments[0].icons[0].y);
+
 
         let team = players[socket.id].team;
         updateScores(team);
-        updateApple();
+        updateApple(segments);
     });
 
     socket.on('playerDied', function () {
@@ -109,13 +122,13 @@ function updateScores(team) {
     io.emit('scoreUpdate', scores);
 }
 
-function updateApple() {
-    setAppleCoordinates()
+function updateApple(segments) {
+    setAppleCoordinates(segments)
     io.emit('appleLocation', apple.getPosition());
 }
 
 // This is what the server should do, make decisions and send information about the decision to clients
-function setAppleCoordinates() {
+function setAppleCoordinates(segments) {
     console.log("Hello there");
     apple.setPosition(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
 }
