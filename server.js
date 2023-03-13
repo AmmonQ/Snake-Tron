@@ -130,6 +130,30 @@ function updateApple(segments) {
 // This is what the server should do, make decisions and send information about the decision to clients
 function setAppleCoordinates(segments) {
     console.log("Hello there");
+
+    var appleXPos = getRandomX();
+    var appleYPos = getRandomY();
+    var playerXPos = segments[0].icons[0].x;
+    var playerYPos = segments[0].icons[0].y;
+
+    if (appleXPos !== playerXPos || appleYPos !== playerYPos) {
+        apple.setPosition(new coordinateJS.Coordinate(appleXPos, appleYPos));
+        return;
+    }
+
+    // var segments = playerYPos[socket.id].getSegments();
+    for (i = ROW_COL_SIZE; i < NUM_COLS*31; i += ROW_COL_SIZE) {
+        for (j = ROW_COL_SIZE; j < NUM_ROWS*31; j += ROW_COL_SIZE) {
+            if (i !== playerXPos || j !== playerYPos/* || isOverlappingWithApple(appleXPos, appleYPos, segments)*/) {
+                console.log("True!! i - j: " + i.toString() + " - " + j.toString());
+                apple.setPosition(new coordinateJS.Coordinate(i, j));
+                return;
+            }
+        }
+    }
+
+
+
     apple.setPosition(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
 }
 
