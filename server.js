@@ -155,14 +155,6 @@ function getRandomY() {
     return (getRandomCoordinate(NUM_ROWS) * ROW_COL_SIZE) + BORDER_SIZE;
 }
 
-// function addOneToX(xPos) {
-//     return ((xPos * NUM_COLS) + ROW_COL_SIZE) + BORDER_SIZE;
-// }
-//
-// function addOneToY(yPos) {
-//     return ((yPos * NUM_ROWS) + ROW_COL_SIZE) + BORDER_SIZE;
-// }
-
 function getRandomCoordinate(scale) {
     return getRandomNum(scale);
 }
