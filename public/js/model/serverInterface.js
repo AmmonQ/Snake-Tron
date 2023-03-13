@@ -32,8 +32,11 @@ export class ServerInterface {
         this.getSocket().on(keyword, funcCallback);
     }
 
-    notifyAppleCollected() {
-        this.emit(ServerInterface.APPLE_COLLECTED);
+    notifyAppleCollected(snake) {
+        this.emit(ServerInterface.APPLE_COLLECTED, {
+            "snake": snake,
+            "socketID": this.getSocketID()
+        });
     }
 
     notifyPlayerDied() {

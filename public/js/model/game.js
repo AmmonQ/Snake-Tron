@@ -141,7 +141,7 @@ export class Game {
         let game = this;
         this.getView().addOverlap(this.getSnake().getHead(), this.getApple(), function() {
             game.getPresenter().setAppleCollected(true);
-            game.getServerInterface().notifyAppleCollected();
+            game.getServerInterface().notifyAppleCollected(game.getSnake());
         })
     }
 
