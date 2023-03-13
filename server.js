@@ -115,14 +115,16 @@ function setAppleCoordinates(player) {
     var playerXPos = player.position.getX();
     var playerYPos = player.position.getY();
 
+    if (appleXPos !== playerXPos || appleYPos !== playerYPos) {
+        apple.setPosition(new coordinateJS.Coordinate(appleXPos, appleYPos));
+        return;
+    }
+
     // var segments = playerYPos[socket.id].getSegments();
-    for (i = appleXPos; i < NUM_COLS*32; i = addOneToX(i)) {
-        for (j = appleYPos; j < NUM_ROWS*32; j = addOneToY(j)) {
-            // console.log("Inside j")
-            // console.log("Inside of set position i - j: " + i.toString() + " - " + j.toString() + "\n");
-            // console.log("Inside of set position x - y: " + playerXPos.toString() + " - " + playerYPos.toString() + "\n");
-            if (i === playerXPos && j === playerYPos/* || isOverlappingWithApple(appleXPos, appleYPos, segments)*/) {
-                // console.log("True!! i - j: " + i.toString() + " - " + j.toString() + "\n");
+    for (i = ROW_COL_SIZE; i < NUM_COLS*31; i += ROW_COL_SIZE) {
+        for (j = ROW_COL_SIZE; j < NUM_ROWS*31; j += ROW_COL_SIZE) {
+            if (i !== playerXPos || j !== playerYPos/* || isOverlappingWithApple(appleXPos, appleYPos, segments)*/) {
+                console.log("True!! i - j: " + i.toString() + " - " + j.toString());
                 apple.setPosition(new coordinateJS.Coordinate(i, j));
                 return;
             }
@@ -153,13 +155,13 @@ function getRandomY() {
     return (getRandomCoordinate(NUM_ROWS) * ROW_COL_SIZE) + BORDER_SIZE;
 }
 
-function addOneToX(xPos) {
-    return (((xPos * NUM_COLS) + ROW_COL_SIZE) % NUM_COLS) + BORDER_SIZE;
-}
-
-function addOneToY(yPos) {
-    return (((yPos * NUM_ROWS) + ROW_COL_SIZE) % NUM_ROWS) + BORDER_SIZE;
-}
+// function addOneToX(xPos) {
+//     return ((xPos * NUM_COLS) + ROW_COL_SIZE) + BORDER_SIZE;
+// }
+//
+// function addOneToY(yPos) {
+//     return ((yPos * NUM_ROWS) + ROW_COL_SIZE) + BORDER_SIZE;
+// }
 
 function getRandomCoordinate(scale) {
     return getRandomNum(scale);
