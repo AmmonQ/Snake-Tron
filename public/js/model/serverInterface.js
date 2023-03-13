@@ -4,8 +4,11 @@ export class ServerInterface {
     static PLAYER_DIED = "playerDied";
     static PLAYER_MOVED = "playerMoved";
 
-    constructor() {
+    constructor(game) {
         this.socket = io();
+        this.game = game;
+
+        this.setUpEndpoints();
     }
 
     getSocket() {
@@ -25,6 +28,10 @@ export class ServerInterface {
         }
     }
 
+    receive(keyword, funcCallback) {
+        this.getSocket().on(keyword, funcCallback);
+    }
+
     notifyAppleCollected() {
         this.emit(ServerInterface.APPLE_COLLECTED);
     }
@@ -35,5 +42,15 @@ export class ServerInterface {
 
     notifyPlayerMoved(newPos) {
         this.emit(ServerInterface.PLAYER_MOVED, newPos);
+    }
+
+    setUpEndpoints() {
+
+        this.receive('currentPlayers', (players) => (this.game.addPlayers(players)));
+        this.receive('newPlayer', (playerInfo) => (this.game.addOtherPlayers(playerInfo)));
+        this.receive('disconnected', (playerID) => (this.game.disconnect(playerID)));
+        this.receive('playerMoved', (playerInfo) => (this.game.moveOtherPlayer(playerInfo)));
+        this.receive('scoreUpdate', (scores) => (this.game.updateScores(scores)));
+        this.receive('appleLocation', (appleLocation) => (this.game.updateApple(appleLocation)));
     }
 }

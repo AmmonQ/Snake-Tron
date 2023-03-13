@@ -1,5 +1,6 @@
 module.exports.Player = class Player {
 
+    // TODO: add segments here!
     constructor(position, id, team) {
         this.position = position;
         this.id = id;
