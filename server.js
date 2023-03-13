@@ -142,8 +142,8 @@ function setAppleCoordinates(segments) {
     }
 
     // var segments = playerYPos[socket.id].getSegments();
-    for (i = ROW_COL_SIZE; i < NUM_COLS*31; i += ROW_COL_SIZE) {
-        for (j = ROW_COL_SIZE; j < NUM_ROWS*31; j += ROW_COL_SIZE) {
+    for (let i = ROW_COL_SIZE; i < NUM_COLS*31; i += ROW_COL_SIZE) {
+        for (let j = ROW_COL_SIZE; j < NUM_ROWS*31; j += ROW_COL_SIZE) {
             if (i !== playerXPos || j !== playerYPos/* || isOverlappingWithApple(appleXPos, appleYPos, segments)*/) {
                 console.log("True!! i - j: " + i.toString() + " - " + j.toString());
                 apple.setPosition(new coordinateJS.Coordinate(i, j));
