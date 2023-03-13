@@ -3,10 +3,6 @@ let app = express();
 let server = require('http').Server(app);
 let io = require('socket.io') (server);
 
-// let coordinateJS = require('./public/js/model/coordinate.js');
-// let appleJS = require('./public/js/model/apple.js');
-// let playerJS = require('./public/js/model/player.js');
-
 let coordinateJS = require('./shared/coordinate.js');
 let appleJS = require('./shared/apple.js');
 let playerJS = require('./shared/player.js');
@@ -30,7 +26,9 @@ let scores = {
 
 let players = {};
 
-let apple = new appleJS.Apple(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
+let apple = new appleJS.Apple(
+    new coordinateJS.Coordinate(getRandomX(), getRandomY())
+);
 
 app.use(express.static(__dirname + '/public'));
 
@@ -74,22 +72,9 @@ io.on('connection', function (socket) {
 
     socket.on('appleCollected', function () {
 
-        const APPLE_SCORE = 10;
-
         let team = players[socket.id].team;
-
-        if (team === TEAM_COLORS[BLUE_INDEX]) {
-            scores.blue += APPLE_SCORE;
-        } else if (team === TEAM_COLORS[RED_INDEX]) {
-            scores.red += APPLE_SCORE;
-        } else {
-            console.log("TEAM NOT RECOGNIZED!");
-        }
-
-        setAppleCoordinates()
-
-        io.emit('appleLocation', apple.getPosition());
-        io.emit('scoreUpdate', scores);
+        updateScores(team);
+        updateApple();
     });
 
     socket.on('playerDied', function () {
@@ -108,8 +93,30 @@ server.listen(8081, function () {
     console.log(`Listening on ${server.address().port}`);
 });
 
+function updateScores(team) {
+
+    const APPLE_SCORE = 10;
+
+
+    if (team === TEAM_COLORS[BLUE_INDEX]) {
+        scores.blue += APPLE_SCORE;
+    } else if (team === TEAM_COLORS[RED_INDEX]) {
+        scores.red += APPLE_SCORE;
+    } else {
+        console.log("TEAM NOT RECOGNIZED!");
+    }
+
+    io.emit('scoreUpdate', scores);
+}
+
+function updateApple() {
+    setAppleCoordinates()
+    io.emit('appleLocation', apple.getPosition());
+}
+
 // This is what the server should do, make decisions and send information about the decision to clients
 function setAppleCoordinates() {
+    console.log("Hello there");
     apple.setPosition(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
 }
 

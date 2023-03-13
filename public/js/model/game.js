@@ -1,6 +1,8 @@
 import { View } from "../view/view.js";
 import { Snake } from "./snake.js";
 import { Presenter } from "../presenter/presenter.js";
+import {ServerInterface} from "./serverInterface.js";
+import {Images} from "../view/images.js";
 
 export class Game {
 
@@ -70,8 +72,89 @@ export class Game {
         this.getPresenter().setAppleCollected(false);
     }
 
+
+
+    addOtherPlayers(playerInfo) {
+
+        const otherPlayer = this.getView().addSprite(playerInfo.position, Images.OTHER_PLAYER);
+        otherPlayer.id = playerInfo.id;
+        this.getOtherSnakes().add(otherPlayer);
+    }
+
+    addPlayer(playerInfo) {
+
+        this.getSnake().addHeadSegment(playerInfo.position, this.getView());
+        this.getSnake().setColor(this.getPresenter().convertToColor(playerInfo.team), this.getView());
+
+        let game = this;
+
+        this.getView().addCollision(this.getSnake().getHead(), this.getOtherSnakes(), function() {
+            game.killPlayer();
+        });
+    }
+
+    addPlayers(players) {
+
+        console.log("Adding other players");
+        console.log("this.getServerInterface().getSocketID() " + this.getServerInterface().getSocketID());
+
+        for (const [key, value] of Object.entries(players)) {
+            console.log(`${key}: ${value}`);
+            if (key === this.getServerInterface().getSocketID()) {
+                this.addPlayer(value);
+            } else {
+                this.addOtherPlayers(value);
+            }
+        }
+    }
+
+    disconnect(playerId) {
+
+        this.getOtherSnakes().getChildren().forEach(function (otherPlayer) {
+            if (playerId === otherPlayer.id) {
+                otherPlayer.destroy();
+            }
+        });
+    }
+
+    moveOtherPlayer(playerInfo) {
+
+        this.getOtherSnakes().getChildren().forEach(function (otherPlayer) {
+            if (playerInfo.id === otherPlayer.id) {
+                otherPlayer.setPosition(playerInfo.position.x, playerInfo.position.y);
+            }
+        });
+    }
+    updateScores(scores) {
+        this.getView().setBlueScoreText("Blue: " + scores.blue);
+        this.getView().setRedScoreText("Red: " + scores.red);
+    }
+
+    updateApple(appleLocation) {
+
+        if (this.getApple()) {
+            this.getApple().destroy();
+        }
+
+        this.setApple(this.getView().addImage(appleLocation, Images.APPLE));
+
+        let game = this;
+        this.getView().addOverlap(this.getSnake().getHead(), this.getApple(), function() {
+            game.getPresenter().setAppleCollected(true);
+            game.getServerInterface().notifyAppleCollected();
+        })
+    }
+
+
+
     preload() {
         this.getView().loadImages();
+    }
+
+    create() {
+        this.setServerInterface(new ServerInterface(this));
+        this.getPresenter().drawBoard(this.getView());
+        this.getView().initScoreText();
     }
 
     update() {
@@ -103,5 +186,4 @@ export class Game {
 
         this.getSnake().updateOldPos();
     }
-
 }
