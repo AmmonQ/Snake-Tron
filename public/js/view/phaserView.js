@@ -1,6 +1,6 @@
 import { Images } from "./images.js";
 
-export class View {
+export class PhaserView {
 
     constructor(gamePtr) {
         this.gamePtr = gamePtr;
@@ -33,31 +33,6 @@ export class View {
 
     setIconColor(icon,  color) {
         icon.setTint(color);
-    }
-
-    getElement(idStr) {
-        return document.getElementById(idStr);
-    }
-
-    getGameCanvas() {
-        return this.getElement("game-canvas");
-    }
-
-    setText(idStr, text) {
-        this.getElement(idStr).textContent = text;
-    }
-
-    setBlueScoreText(text) {
-        this.setText("blue-score", text);
-    }
-
-    setRedScoreText(text) {
-        this.setText("red-score", text);
-    }
-
-    initScoreText() {
-        this.setBlueScoreText('0');
-        this.setRedScoreText('0');
     }
 
     loadImage(imageName, imagePath) {

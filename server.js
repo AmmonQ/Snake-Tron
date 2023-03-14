@@ -19,6 +19,9 @@ const ROW_COL_SIZE = 32;
 const NUM_ROWS = 20;
 const NUM_COLS = 30;
 
+const WIDTH = ROW_COL_SIZE * NUM_COLS + BORDER_SIZE * 2;
+const HEIGHT = ROW_COL_SIZE * NUM_ROWS + BORDER_SIZE * 2;
+
 let scores = {
     blue: 0,
     red: 0
@@ -87,7 +90,7 @@ io.on('connection', function (socket) {
 
         let team = players[socket.id].team;
         updateScores(team);
-        updateApple(segments);
+        updateApple(clientSnake);
     });
 
     socket.on('playerDied', function () {
@@ -122,37 +125,61 @@ function updateScores(team) {
     io.emit('scoreUpdate', scores);
 }
 
-function updateApple(segments) {
-    setAppleCoordinates(segments)
+function updateApple(snake) {
+    setAppleCoordinates(snake)
     io.emit('appleLocation', apple.getPosition());
 }
 
+
+function isOverlapping(item1, item2) {
+
+    if (Math.abs(item1.x - item2.x) >= ROW_COL_SIZE) {
+        return false;
+    } else if (Math.abs(item1.y - item2.y) >= ROW_COL_SIZE) {
+        return false;
+    }
+
+    return true;
+}
+
+function isAppleOverlappingPlayer(apple, snake) {
+
+    for (let segment of snake.segments) {
+
+        console.log("apple.getPosition().getX(): " + apple.getPosition().getX());
+        console.log("apple.getPosition().getY(): " + apple.getPosition().getY());
+        console.log("segment.icons[0].x: " + segment.icons[0].x);
+        console.log("segment.icons[0].y: " + segment.icons[0].y);
+
+        if (isOverlapping(apple.getPosition(), segment.icons[0])) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // This is what the server should do, make decisions and send information about the decision to clients
-function setAppleCoordinates(segments) {
+function setAppleCoordinates(snake) {
     console.log("Hello there");
 
-    var appleXPos = getRandomX();
-    var appleYPos = getRandomY();
-    var playerXPos = segments[0].icons[0].x;
-    var playerYPos = segments[0].icons[0].y;
+    apple.setPosition(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
 
-    if (appleXPos !== playerXPos || appleYPos !== playerYPos) {
-        apple.setPosition(new coordinateJS.Coordinate(appleXPos, appleYPos));
+    if (!isAppleOverlappingPlayer(apple, snake)) {
         return;
     }
 
-    // var segments = playerYPos[socket.id].getSegments();
-    for (i = ROW_COL_SIZE; i < NUM_COLS*31; i += ROW_COL_SIZE) {
-        for (j = ROW_COL_SIZE; j < NUM_ROWS*31; j += ROW_COL_SIZE) {
-            if (i !== playerXPos || j !== playerYPos/* || isOverlappingWithApple(appleXPos, appleYPos, segments)*/) {
-                console.log("True!! i - j: " + i.toString() + " - " + j.toString());
-                apple.setPosition(new coordinateJS.Coordinate(i, j));
+    for (let i = apple.getPosition().getX(); i < HEIGHT - BORDER_SIZE; i += ROW_COL_SIZE) {
+        for (let j = apple.getPosition().getY(); j < WIDTH - BORDER_SIZE; j += ROW_COL_SIZE) {
+            apple.setPosition(new coordinateJS.Coordinate(j, i));
+            if (!isAppleOverlappingPlayer(apple, snake)) {
                 return;
             }
         }
     }
 
-    apple.setPosition(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
+    console.log("There is no room for an apple anywhere");
+    apple.setPosition(-1, -1);
 }
 
 function getRandomTeam() {

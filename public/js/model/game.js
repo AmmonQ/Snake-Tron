@@ -1,14 +1,16 @@
-import { View } from "../view/view.js";
+import { PhaserView } from "../view/phaserView.js";
 import { Snake } from "./snake.js";
 import { Presenter } from "../presenter/presenter.js";
-import {ServerInterface} from "./serverInterface.js";
-import {Images} from "../view/images.js";
+import { ServerInterface } from "./serverInterface.js";
+import { Images } from "../view/images.js";
+import { IndexView } from "../view/indexView.js";
 
 export class Game {
 
     constructor(gamePtr) {
         this.gamePtr = gamePtr;
-        this.view = new View(gamePtr);
+        this.phaserView = new PhaserView(gamePtr);
+        this.indexView = new IndexView();
         this.presenter = new Presenter();
         this.serverInterface = null;
 
@@ -16,7 +18,7 @@ export class Game {
 
         this.apple = null;
         this.snake = new Snake(this.getPresenter().getTileDiameter());
-        this.otherSnakes = this.getView().addPhysicsGroup();
+        this.otherSnakes = this.getPhaserView().addPhysicsGroup();
     }
 
     getApple() {
@@ -31,8 +33,12 @@ export class Game {
         return this.cursors;
     }
 
-    getView() {
-        return this.view;
+    getPhaserView() {
+        return this.phaserView;
+    }
+
+    getIndexView() {
+        return this.indexView;
     }
 
     getPresenter() {
@@ -67,7 +73,7 @@ export class Game {
             return;
         }
 
-        this.getSnake().addBodySegment(this.getView());
+        this.getSnake().addBodySegment(this.getPhaserView());
 
         this.getPresenter().setAppleCollected(false);
     }
@@ -76,19 +82,19 @@ export class Game {
 
     addOtherPlayers(playerInfo) {
 
-        const otherPlayer = this.getView().addSprite(playerInfo.position, Images.OTHER_PLAYER);
+        const otherPlayer = this.getPhaserView().addSprite(playerInfo.position, Images.OTHER_PLAYER);
         otherPlayer.id = playerInfo.id;
         this.getOtherSnakes().add(otherPlayer);
     }
 
     addPlayer(playerInfo) {
 
-        this.getSnake().addHeadSegment(playerInfo.position, this.getView());
-        this.getSnake().setColor(this.getPresenter().convertToColor(playerInfo.team), this.getView());
+        this.getSnake().addHeadSegment(playerInfo.position, this.getPhaserView());
+        this.getSnake().setColor(this.getPresenter().convertToColor(playerInfo.team), this.getPhaserView());
 
         let game = this;
 
-        this.getView().addCollision(this.getSnake().getHead(), this.getOtherSnakes(), function() {
+        this.getPhaserView().addCollision(this.getSnake().getHead(), this.getOtherSnakes(), function() {
             game.killPlayer();
         });
     }
@@ -126,8 +132,8 @@ export class Game {
         });
     }
     updateScores(scores) {
-        this.getView().setBlueScoreText("Blue: " + scores.blue);
-        this.getView().setRedScoreText("Red: " + scores.red);
+        this.getIndexView().setBlueScoreText("Blue: " + scores.blue);
+        this.getIndexView().setRedScoreText("Red: " + scores.red);
     }
 
     updateApple(appleLocation) {
@@ -136,10 +142,10 @@ export class Game {
             this.getApple().destroy();
         }
 
-        this.setApple(this.getView().addImage(appleLocation, Images.APPLE));
+        this.setApple(this.getPhaserView().addImage(appleLocation, Images.APPLE));
 
         let game = this;
-        this.getView().addOverlap(this.getSnake().getHead(), this.getApple(), function() {
+        this.getPhaserView().addOverlap(this.getSnake().getHead(), this.getApple(), function() {
             game.getPresenter().setAppleCollected(true);
             game.getServerInterface().notifyAppleCollected(game.getSnake());
         })
@@ -148,13 +154,13 @@ export class Game {
 
 
     preload() {
-        this.getView().loadImages();
+        this.getPhaserView().loadImages();
     }
 
     create() {
         this.setServerInterface(new ServerInterface(this));
-        this.getPresenter().drawBoard(this.getView());
-        this.getView().initScoreText();
+        this.getPresenter().drawBoard(this.getPhaserView());
+        this.getIndexView().initScoreText();
     }
 
     update() {
