@@ -152,8 +152,6 @@ function setAppleCoordinates(segments) {
         }
     }
 
-
-
     apple.setPosition(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
 }
 
