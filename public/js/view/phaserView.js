@@ -2,10 +2,10 @@ import { Images } from "./images.js";
 
 export class PhaserView {
 
-    constructor(gamePtr) {
-        this.gamePtr = gamePtr;
-        this.graphics = gamePtr.add.graphics();
-        this.physics = gamePtr.physics;
+    constructor(phaserPtr) {
+        this.phaserPtr = phaserPtr;
+        this.graphics = phaserPtr.add.graphics();
+        this.physics = phaserPtr.physics;
 
         this.images = new Images();
     }
@@ -20,15 +20,15 @@ export class PhaserView {
     }
 
     addSprite(position, imageName) {
-        return this.gamePtr.add.sprite(position.x, position.y, imageName).setOrigin(0.0, 0.0);
+        return this.phaserPtr.add.sprite(position.x, position.y, imageName).setOrigin(0.0, 0.0);
     }
 
     addOverlap(item1, item2, callbackFunc) {
-        this.physics.add.overlap(item1, item2, callbackFunc, null, this.gamePtr);
+        this.physics.add.overlap(item1, item2, callbackFunc, null, this.phaserPtr);
     }
 
     addCollision(item1, item2, callbackFunc) {
-        this.physics.add.collider(item1, item2, callbackFunc, null, this.gamePtr);
+        this.physics.add.collider(item1, item2, callbackFunc, null, this.phaserPtr);
     }
 
     setIconColor(icon,  color) {
@@ -36,7 +36,7 @@ export class PhaserView {
     }
 
     loadImage(imageName, imagePath) {
-        this.gamePtr.load.image(imageName, imagePath);
+        this.phaserPtr.load.image(imageName, imagePath);
     }
 
     loadImages() {

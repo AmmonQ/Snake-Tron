@@ -1,6 +1,5 @@
-import { PhaserView } from "../view/phaserView.js";
 import { Snake } from "./snake.js";
-import { Presenter } from "../presenter/presenter.js";
+import { PhaserPresenter } from "../presenter/phaserPresenter.js";
 import { ServerInterface } from "./serverInterface.js";
 import { Images } from "../view/images.js";
 import { IndexView } from "../view/indexView.js";
@@ -9,16 +8,15 @@ export class Game {
 
     constructor(gamePtr) {
         this.gamePtr = gamePtr;
-        this.phaserView = new PhaserView(gamePtr);
         this.indexView = new IndexView();
-        this.presenter = new Presenter();
+        this.presenter = new PhaserPresenter(gamePtr);
         this.serverInterface = null;
 
         this.cursors = this.gamePtr.input.keyboard.createCursorKeys();
 
         this.apple = null;
         this.snake = new Snake(this.getPresenter().getTileDiameter());
-        this.otherSnakes = this.getPhaserView().addPhysicsGroup();
+        this.otherSnakes = this.getPresenter().getPhysicsGroup();
     }
 
     getApple() {
@@ -31,10 +29,6 @@ export class Game {
 
     getCursors() {
         return this.cursors;
-    }
-
-    getPhaserView() {
-        return this.phaserView;
     }
 
     getIndexView() {
@@ -73,39 +67,34 @@ export class Game {
             return;
         }
 
-        this.getSnake().addBodySegment(this.getPhaserView());
-
+        this.getSnake().addBodySegment(this.getPresenter().getPhaserView());
         this.getPresenter().setAppleCollected(false);
     }
 
-
-
     addOtherPlayers(playerInfo) {
 
-        const otherPlayer = this.getPhaserView().addSprite(playerInfo.position, Images.OTHER_PLAYER);
+        const otherPlayer = this.getPresenter().addSprite(playerInfo.position, Images.OTHER_PLAYER);
         otherPlayer.id = playerInfo.id;
         this.getOtherSnakes().add(otherPlayer);
     }
 
     addPlayer(playerInfo) {
 
-        this.getSnake().addHeadSegment(playerInfo.position, this.getPhaserView());
-        this.getSnake().setColor(this.getPresenter().convertToColor(playerInfo.team), this.getPhaserView());
+        this.getSnake().addHeadSegment(playerInfo.position, this.getPresenter().getPhaserView());
+        this.getSnake().setColor(this.getPresenter().convertToColor(playerInfo.team), this.getPresenter().getPhaserView());
 
         let game = this;
-
-        this.getPhaserView().addCollision(this.getSnake().getHead(), this.getOtherSnakes(), function() {
+        let head = this.getSnake().getHead();
+        let callbackFunc = () => {
             game.killPlayer();
-        });
+        }
+
+        this.getPresenter().addCollision(head, this.getOtherSnakes(), callbackFunc);
     }
 
     addPlayers(players) {
 
-        console.log("Adding other players");
-        console.log("this.getServerInterface().getSocketID() " + this.getServerInterface().getSocketID());
-
         for (const [key, value] of Object.entries(players)) {
-            console.log(`${key}: ${value}`);
             if (key === this.getServerInterface().getSocketID()) {
                 this.addPlayer(value);
             } else {
@@ -114,13 +103,14 @@ export class Game {
         }
     }
 
-    disconnect(playerId) {
+    disconnect(snakeID) {
 
-        this.getOtherSnakes().getChildren().forEach(function (otherPlayer) {
-            if (playerId === otherPlayer.id) {
-                otherPlayer.destroy();
+        for (let otherSnake of this.getOtherSnakes().getChildren()) {
+            if (snakeID === otherSnake.id) {
+                otherSnake.destroy();
+                return;
             }
-        });
+        }
     }
 
     moveOtherPlayer(playerInfo) {
@@ -142,24 +132,28 @@ export class Game {
             this.getApple().destroy();
         }
 
-        this.setApple(this.getPhaserView().addImage(appleLocation, Images.APPLE));
+        this.setApple(this.getPresenter().addImage(appleLocation, Images.APPLE));
 
+
+        let head = this.getSnake().getHead();
         let game = this;
-        this.getPhaserView().addOverlap(this.getSnake().getHead(), this.getApple(), function() {
+        let callbackFunc = () => {
             game.getPresenter().setAppleCollected(true);
             game.getServerInterface().notifyAppleCollected(game.getSnake());
-        })
+        }
+
+        this.getPresenter().addOverlap(head, this.getApple(), callbackFunc)
     }
 
 
 
     preload() {
-        this.getPhaserView().loadImages();
+        this.getPresenter().loadImages();
     }
 
     create() {
         this.setServerInterface(new ServerInterface(this));
-        this.getPresenter().drawBoard(this.getPhaserView());
+        this.getPresenter().drawBoard();
         this.getIndexView().initScoreText();
     }
 

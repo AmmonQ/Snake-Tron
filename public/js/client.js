@@ -1,4 +1,4 @@
-import { Presenter } from './presenter/presenter.js'
+import { PhaserPresenter } from './presenter/phaserPresenter.js'
 import { Game } from "./model/game.js";
 import { IndexView } from "./view/indexView.js";
 
@@ -21,9 +21,9 @@ function update() {
 let config = {
     type: Phaser.AUTO,
     parent: IndexView.getGameCanvas(),
-    width: Presenter.WIDTH,
-    height: Presenter.HEIGHT,
-    backgroundColor: Presenter.BG_COLOR_STR,
+    width: PhaserPresenter.WIDTH,
+    height: PhaserPresenter.HEIGHT,
+    backgroundColor: PhaserPresenter.BG_COLOR_STR,
     physics: {
         default: 'arcade',
         arcade: {
