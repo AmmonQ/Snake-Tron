@@ -3,12 +3,12 @@ import {PhaserView} from "../view/phaserView.js";
 
 export class PhaserPresenter {
 
-    static TILE_DIAMETER = 32;
+    static ROW_COL_SIZE = 32;
     static BORDER_SIZE = 32;
     static NUM_ROWS = 20;
     static NUM_COLS = 30;
-    static WIDTH = PhaserPresenter.TILE_DIAMETER * PhaserPresenter.NUM_COLS + PhaserPresenter.BORDER_SIZE * 2;
-    static HEIGHT = PhaserPresenter.TILE_DIAMETER * PhaserPresenter.NUM_ROWS + PhaserPresenter.BORDER_SIZE * 2;
+    static WIDTH = PhaserPresenter.ROW_COL_SIZE * PhaserPresenter.NUM_COLS + PhaserPresenter.BORDER_SIZE * 2;
+    static HEIGHT = PhaserPresenter.ROW_COL_SIZE * PhaserPresenter.NUM_ROWS + PhaserPresenter.BORDER_SIZE * 2;
 
     static BG_COLOR_STR = '#009C29'
 
@@ -17,7 +17,7 @@ export class PhaserPresenter {
 
         this.BLUE = 0x0000FF;
         this.RED = 0xFF0000;
-        this.TILE_DIAMETER = 32;
+        this.ROW_COL_SIZE = 32;
 
         this.appleCollected = false;
         this.phaserView = new PhaserView(phaserPtr);
@@ -31,8 +31,8 @@ export class PhaserPresenter {
         return this.RED;
     }
 
-    getTileDiameter() {
-        return this.TILE_DIAMETER;
+    getRowColSize() {
+        return this.ROW_COL_SIZE;
     }
 
     isAppleCollected() {
@@ -51,8 +51,16 @@ export class PhaserPresenter {
         return this.getPhaserView().addPhysicsGroup();
     }
 
-    addSprite(position, image) {
-        return this.getPhaserView().addSprite(position, image);
+    convertRowToY(row) {
+        return (row * this.getRowColSize()) + PhaserPresenter.BORDER_SIZE;
+    }
+
+    convertColToX(col) {
+        return (col * this.getRowColSize()) + PhaserPresenter.BORDER_SIZE;
+    }
+
+    addSprite(row, col, image) {
+        return this.getPhaserView().addSprite(this.convertColToX(col), this.convertRowToY(row), image);
     }
 
     loadImages() {
@@ -67,8 +75,8 @@ export class PhaserPresenter {
         this.getPhaserView().addOverlap(item1, item2, callbackFunc)
     }
 
-    addImage(position, imageName) {
-        return this.getPhaserView().addImage(position, imageName);
+    addImage(row, col, imageName) {
+        return this.getPhaserView().addImage(this.convertColToX(col), this.convertRowToY(row), imageName);
     }
 
     convertToColor(colorStr) {
@@ -97,10 +105,10 @@ export class PhaserPresenter {
 
         let previous = false;
 
-        for (let col = PhaserPresenter.BORDER_SIZE; col < PhaserPresenter.HEIGHT - PhaserPresenter.BORDER_SIZE; col += this.getTileDiameter()) {
-            for (let row = PhaserPresenter.BORDER_SIZE; row < PhaserPresenter.WIDTH - PhaserPresenter.BORDER_SIZE; row += this.getTileDiameter()) {
+        for (let col = PhaserPresenter.BORDER_SIZE; col < PhaserPresenter.HEIGHT - PhaserPresenter.BORDER_SIZE; col += this.getRowColSize()) {
+            for (let row = PhaserPresenter.BORDER_SIZE; row < PhaserPresenter.WIDTH - PhaserPresenter.BORDER_SIZE; row += this.getRowColSize()) {
                 if (!previous) {
-                    this.getPhaserView().drawRect(row, col, this.getTileDiameter(), this.getTileDiameter(), FG_COLOR, ALPHA);
+                    this.getPhaserView().drawRect(row, col, this.getRowColSize(), this.getRowColSize(), FG_COLOR, ALPHA);
                 }
                 previous = !previous;
             }
@@ -141,7 +149,7 @@ export class PhaserPresenter {
     }
 
     isCoordinateAligned(coordinate) {
-        return ((coordinate % this.getTileDiameter()) === 0);
+        return ((coordinate % this.getRowColSize()) === 0);
     }
 
     areCoordinatesAligned(position) {

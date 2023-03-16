@@ -15,12 +15,12 @@ export class PhaserView {
         this.graphics.fillRect(x1, y1, x2, y2);
     }
 
-    addImage(position, imageName) {
-        return this.physics.add.image(position.x, position.y, imageName).setOrigin(0.0, 0.0);
+    addImage(x, y, imageName) {
+        return this.physics.add.image(x, y, imageName).setOrigin(0.0, 0.0);
     }
 
-    addSprite(position, imageName) {
-        return this.phaserPtr.add.sprite(position.x, position.y, imageName).setOrigin(0.0, 0.0);
+    addSprite(x, y, imageName) {
+        return this.phaserPtr.add.sprite(x, y, imageName).setOrigin(0.0, 0.0);
     }
 
     addOverlap(item1, item2, callbackFunc) {

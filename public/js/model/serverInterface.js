@@ -3,7 +3,7 @@ export class ServerInterface {
     // emission keywords
     static APPLE_COLLECTED = "appleCollected";
     static PLAYER_DIED = "playerDied";
-    static PLAYER_MOVED = "playerMoved";
+    static PLAYER_MOVED = "playerMovement";
 
     // reception keywords
     static CURRENT_PLAYERS = "currentPlayers";
@@ -59,10 +59,10 @@ export class ServerInterface {
     setUpEndpoints() {
 
         this.receive(ServerInterface.CURRENT_PLAYERS, (players) => (this.game.addPlayers(players)));
-        this.receive(ServerInterface.NEW_PLAYER, (playerInfo) => (this.game.addOtherPlayers(playerInfo)));
+        this.receive(ServerInterface.NEW_PLAYER, (newPlayer) => (this.game.addOtherPlayers(newPlayer.position.row, newPlayer.position.col, newPlayer.id)));
         this.receive(ServerInterface.DISCONNECTED, (playerID) => (this.game.disconnect(playerID)));
         this.receive(ServerInterface.PLAYER_MOVED, (playerInfo) => (this.game.moveOtherPlayer(playerInfo)));
         this.receive(ServerInterface.SCORE_UPDATE, (scores) => (this.game.updateScores(scores)));
-        this.receive(ServerInterface.APPLE_LOCATION, (appleLocation) => (this.game.updateApple(appleLocation)));
+        this.receive(ServerInterface.APPLE_LOCATION, (appleLocation) => (this.game.updateApple(appleLocation.row, appleLocation.col)));
     }
 }

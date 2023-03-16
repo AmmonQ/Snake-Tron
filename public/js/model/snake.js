@@ -112,10 +112,10 @@ export class Snake {
         };
     }
 
-    getNewPos(position, delta) {
+    getNewPos(x, y, delta) {
 
-        let newX = position.x;
-        let newY = position.y;
+        let newX = x;
+        let newY = y;
 
         switch (this.getDirection()) {
             case Directions.LEFT:
@@ -138,29 +138,27 @@ export class Snake {
         };
     }
 
-    addSegment(insertPos, view) {
+    addSegment(x, y, view) {
 
         let segment = new Segment();
 
         for (let i = 0; i < this.NUM_ICONS_PER_SEGMENTS; i++) {
 
-            let newPosition = this.getNewPos(insertPos, i * this.getMovDelta());
-            segment.addIcon(view.addImage(newPosition, this.SEGMENT_IMAGE_TYPE));
+            let newPosition = this.getNewPos(x, y, i * this.getMovDelta());
+            segment.addIcon(view.addImage(newPosition.x, newPosition.y, this.SEGMENT_IMAGE_TYPE));
         }
 
         this.getSegments().push(segment);
     }
 
-
-    addHeadSegment(position, view) {
-        this.addSegment(position, view);
+    addHeadSegment(x, y, view) {
+        this.addSegment(x, y, view);
         this.getLastSegment().getFirst().destroy();
-        this.getLastSegment().setFirst(view.addImage(position, this.HEAD_IMAGE_TYPE));
+        this.getLastSegment().setFirst(view.addImage(x, y, this.HEAD_IMAGE_TYPE));
     }
 
-
     addBodySegment(view) {
-        this.addSegment(this.getLast(), view);
+        this.addSegment(this.getLast().x, this.getLast().y, view);
         this.getLastSegment().setColor(this.color, view);
     }
 
@@ -199,7 +197,7 @@ export class Snake {
 
         this.getSegmentsAt(0).move(this.getHead());
 
-        let newPos = this.getNewPos(this.getHead(), this.getMovDelta());
+        let newPos = this.getNewPos(this.getHead().x, this.getHead().y, this.getMovDelta());
 
         this.getHead().setPosition(newPos.x, newPos.y);
     }

@@ -15,7 +15,7 @@ export class Game {
         this.cursors = this.gamePtr.input.keyboard.createCursorKeys();
 
         this.apple = null;
-        this.snake = new Snake(this.getPresenter().getTileDiameter());
+        this.snake = new Snake(this.getPresenter().getRowColSize());
         this.otherSnakes = this.getPresenter().getPhysicsGroup();
     }
 
@@ -71,17 +71,17 @@ export class Game {
         this.getPresenter().setAppleCollected(false);
     }
 
-    addOtherPlayers(playerInfo) {
+    addOtherPlayers(row, col, id) {
 
-        const otherPlayer = this.getPresenter().addSprite(playerInfo.position, Images.OTHER_PLAYER);
-        otherPlayer.id = playerInfo.id;
+        const otherPlayer = this.getPresenter().addSprite(row, col, Images.OTHER_PLAYER);
+        otherPlayer.id = id;
         this.getOtherSnakes().add(otherPlayer);
     }
 
-    addPlayer(playerInfo) {
+    addPlayer(row, col, team) {
 
-        this.getSnake().addHeadSegment(playerInfo.position, this.getPresenter().getPhaserView());
-        this.getSnake().setColor(this.getPresenter().convertToColor(playerInfo.team), this.getPresenter().getPhaserView());
+        this.getSnake().addHeadSegment(this.getPresenter().convertColToX(col), this.getPresenter().convertRowToY(row), this.getPresenter().getPhaserView());
+        this.getSnake().setColor(this.getPresenter().convertToColor(team), this.getPresenter().getPhaserView());
 
         let game = this;
         let head = this.getSnake().getHead();
@@ -95,10 +95,14 @@ export class Game {
     addPlayers(players) {
 
         for (const [key, value] of Object.entries(players)) {
+
+            let row = value.position.row;
+            let col = value.position.col;
+
             if (key === this.getServerInterface().getSocketID()) {
-                this.addPlayer(value);
+                this.addPlayer(row, col, value.team);
             } else {
-                this.addOtherPlayers(value);
+                this.addOtherPlayers(row, col, value.id);
             }
         }
     }
@@ -126,14 +130,13 @@ export class Game {
         this.getIndexView().setRedScoreText("Red: " + scores.red);
     }
 
-    updateApple(appleLocation) {
+    updateApple(row, col) {
 
         if (this.getApple()) {
             this.getApple().destroy();
         }
 
-        this.setApple(this.getPresenter().addImage(appleLocation, Images.APPLE));
-
+        this.setApple(this.getPresenter().addImage(row, col, Images.APPLE));
 
         let head = this.getSnake().getHead();
         let game = this;
