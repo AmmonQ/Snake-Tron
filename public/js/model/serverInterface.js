@@ -42,10 +42,7 @@ export class ServerInterface {
     }
 
     notifyAppleCollected(snake) {
-        this.emit(ServerInterface.APPLE_COLLECTED, {
-            "snake": snake,
-            "socketID": this.getSocketID()
-        });
+        this.emit(ServerInterface.APPLE_COLLECTED, snake);
     }
 
     notifyPlayerDied() {

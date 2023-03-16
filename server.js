@@ -68,11 +68,20 @@ io.on('connection', function (socket) {
         io.emit('playerMoved', players[socket.id]);
     });
 
-    socket.on('appleCollected', function (data) {
+    socket.on('appleCollected', function (snake) {
 
-        let clientSnake = data.snake;
-        let segments = clientSnake.segments;
-        let socketID = data.socketID;
+        // let clientSnake = data.snake;
+        let segments = snake.segments;
+        // let socketID = data.socketID;
+
+        let playerPosition = new coordinateJS.Coordinate(convertYToRow(snake.position.y), convertXToCol(snake.position.x));
+
+        let player = new playerJS.Player(playerPosition, socket.id, snake.color);
+
+        for (let segment of segments) {
+            let segmentPosition = new coordinateJS.Coordinate(convertYToRow(segment.icons[0].y), convertXToCol(segment.icons[0].x));
+            player.addSegment(segmentPosition);
+        }
 
         // console.log("socketID: " + socketID);
         // console.log("clientSnake: " + clientSnake);
@@ -83,7 +92,7 @@ io.on('connection', function (socket) {
 
         let team = players[socket.id].team;
         updateScores(team);
-        updateApple(clientSnake);
+        updateApple(player);
     });
 
     socket.on('playerDied', function () {
@@ -102,6 +111,14 @@ server.listen(8081, function () {
     console.log(`Listening on ${server.address().port}`);
 });
 
+function convertYToRow(y) {
+    return Math.floor((y - 32) / 32);
+}
+
+function convertXToCol(x) {
+    return Math.floor((x - 32) / 32);
+}
+
 function updateScores(team) {
 
     const APPLE_SCORE = 10;
@@ -118,32 +135,32 @@ function updateScores(team) {
     io.emit('scoreUpdate', scores);
 }
 
-function updateApple(snake) {
-    setAppleCoordinates(snake)
+function updateApple(player) {
+    setAppleCoordinates(player)
     io.emit('appleLocation', apple.getPosition());
 }
 
 function isOverlapping(item1, item2) {
 
-    // if (Math.abs(item1.x - item2.x) >= ROW_COL_SIZE) {
-    //     return false;
-    // } else if (Math.abs(item1.y - item2.y) >= ROW_COL_SIZE) {
-    //     return false;
-    // }
+    if (item1.row !== item2.row) {
+        return false;
+    } else if (item1.col !== item2.col) {
+        return false;
+    }
 
     return true;
 }
 
-function isAppleOverlappingPlayer(apple, snake) {
+function isAppleOverlappingPlayer(apple, player) {
 
-    for (let segment of snake.segments) {
+    for (let segment of player.segments) {
 
-        console.log("apple.getPosition().getX(): " + apple.getPosition().getRow());
-        console.log("apple.getPosition().getY(): " + apple.getPosition().getCol());
-        console.log("segment.icons[0].x: " + segment.icons[0].x);
-        console.log("segment.icons[0].y: " + segment.icons[0].y);
+        // console.log("apple.getPosition().getX(): " + apple.getPosition().getRow());
+        // console.log("apple.getPosition().getY(): " + apple.getPosition().getCol());
+        // console.log("segment.icons[0].x: " + segment.icons[0].x);
+        // console.log("segment.icons[0].y: " + segment.icons[0].y);
 
-        if (isOverlapping(apple.getPosition(), segment.icons[0])) {
+        if (isOverlapping(apple.getPosition(), segment)) {
             return true;
         }
     }
@@ -152,25 +169,36 @@ function isAppleOverlappingPlayer(apple, snake) {
 }
 
 // This is what the server should do, make decisions and send information about the decision to clients
-function setAppleCoordinates(snake) {
+function setAppleCoordinates(player) {
 
     apple.setPosition(new coordinateJS.Coordinate(getRandomRow(), getRandomCol()));
 
-    // if (!isAppleOverlappingPlayer(apple, snake)) {
-    //     return;
-    // }
+    if (!isAppleOverlappingPlayer(apple, player)) {
+        return;
+    }
 
-    // for (let row = apple.getPosition().getRow(); row < NUM_ROWS; row++) {
-    //     for (let col = apple.getPosition().getCol(); col < NUM_COLS; col++) {
-    //         apple.setPosition(new coordinateJS.Coordinate(row, col));
-    //         if (!isAppleOverlappingPlayer(apple, snake)) {
-    //             return;
-    //         }
-    //     }
-    // }
+    let startRow = apple.getPosition().row;
+    let startCol = apple.getPosition().col;
 
-    // console.log("There is no room for an apple anywhere");
-    // apple.setPosition(-1, -1);
+    for (let i = 0; i < NUM_ROWS; i++) {
+        let row = i + startRow;
+        if (row >= NUM_ROWS) {
+            row = row - NUM_ROWS;
+        }
+        for (let j = 0; j < NUM_COLS; j++) {
+            let col = j + startCol;
+            if (col >= NUM_COLS) {
+                col = col - NUM_COLS;
+            }
+            apple.setPosition(new coordinateJS.Coordinate(row, col));
+            if (!isAppleOverlappingPlayer(apple, player)) {
+                return;
+            }
+        }
+    }
+
+    console.log("There is no room for an apple anywhere");
+    apple.setPosition(-1, -1);
 }
 
 function getRandomTeam() {
