@@ -221,6 +221,10 @@ export class Snake {
         this.color = color;
     }
 
+    getColor() {
+        return this.color;
+    }
+
     updateDirection() {
         this.setDirection(this.getNextDirection());
     }

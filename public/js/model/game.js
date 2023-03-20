@@ -16,7 +16,7 @@ export class Game {
 
         this.apple = null;
         this.snake = new Snake(this.getPresenter().getRowColSize());
-        this.otherSnakes = this.getPresenter().getPhysicsGroup();
+        this.otherSnakes = {};
     }
 
     getApple() {
@@ -73,23 +73,16 @@ export class Game {
 
     addOtherPlayers(row, col, id) {
 
-        const otherPlayer = this.getPresenter().addSprite(row, col, Images.OTHER_PLAYER);
-        otherPlayer.id = id;
-        this.getOtherSnakes().add(otherPlayer);
+        let presenter = this.getPresenter();
+        const player = new Snake(this.getPresenter().getRowColSize());
+        player.addHeadSegment(presenter.convertColToX(col), presenter.convertRowToY(row), presenter.getPhaserView());
+        this.getOtherSnakes()[id] = player;
     }
 
     addPlayer(row, col, team) {
 
         this.getSnake().addHeadSegment(this.getPresenter().convertColToX(col), this.getPresenter().convertRowToY(row), this.getPresenter().getPhaserView());
         this.getSnake().setColor(this.getPresenter().convertToColor(team), this.getPresenter().getPhaserView());
-
-        let game = this;
-        let head = this.getSnake().getHead();
-        let callbackFunc = () => {
-            game.killPlayer();
-        }
-
-        this.getPresenter().addCollision(head, this.getOtherSnakes(), callbackFunc);
     }
 
     addPlayers(players) {
@@ -109,22 +102,30 @@ export class Game {
 
     disconnect(snakeID) {
 
-        for (let otherSnake of this.getOtherSnakes().getChildren()) {
-            if (snakeID === otherSnake.id) {
-                otherSnake.destroy();
-                return;
-            }
+        let player = this.getOtherSnakes()[snakeID];
+        player.destroy();
+    }
+
+    growPlayer(playerID) {
+        console.log("grow player");
+        console.log("playerID: " + playerID);
+        let player = this.getOtherSnakes()[playerID];
+        if (typeof player !== "undefined") {
+            console.log("I'm in");
+            player.addBodySegment(this.getPresenter().getPhaserView());
         }
     }
 
-    moveOtherPlayer(playerInfo) {
-
-        this.getOtherSnakes().getChildren().forEach(function (otherPlayer) {
-            if (playerInfo.id === otherPlayer.id) {
-                otherPlayer.setPosition(playerInfo.position.x, playerInfo.position.y);
+    setPlayerDirection(nextDir, socketID) {
+        let player = this.getOtherSnakes()[socketID];
+        if (typeof player !== "undefined") {
+            if (player.getDirection() === "none") {
+                player.setDirection(nextDir);
             }
-        });
+            player.setNextDirection(nextDir);
+        }
     }
+
     updateScores(scores) {
         this.getIndexView().setBlueScoreText("Blue: " + scores.blue);
         this.getIndexView().setRedScoreText("Red: " + scores.red);
@@ -134,6 +135,7 @@ export class Game {
 
         if (this.getApple()) {
             this.getApple().destroy();
+            this.setApple(null);
         }
 
         this.setApple(this.getPresenter().addImage(row, col, Images.APPLE));
@@ -142,13 +144,13 @@ export class Game {
         let game = this;
         let callbackFunc = () => {
             game.getPresenter().setAppleCollected(true);
+            game.getApple().destroy();
+            game.setApple(null);
             game.getServerInterface().notifyAppleCollected(game.getSnake());
         }
 
         this.getPresenter().addOverlap(head, this.getApple(), callbackFunc)
     }
-
-
 
     preload() {
         this.getPresenter().loadImages();
@@ -173,20 +175,30 @@ export class Game {
 
         // set direction and position
         let nextDir = this.getPresenter().getPlayerNextDirection(this.getCursors(), this.getSnake().getDirection());
+        if (nextDir !== this.getSnake().getNextDirection()) {
+            this.getServerInterface().notifyDirectionChanged(this.getSnake().getDirection(), nextDir);
+        }
         this.getSnake().setNextDirection(nextDir);
         this.getPresenter().setSnakeDirection(this.getSnake(), this);
-
-        this.getSnake().move();
 
         if (this.getSnake().isOverlapping()) {
             this.killPlayer();
             return;
         }
 
-        if (this.getSnake().hasMoved()) {
-            this.getServerInterface().notifyPlayerMoved(this.getSnake().getPos());
+        this.getSnake().updateOldPos();
+
+    }
+
+    tick() {
+
+        for (const [playerID, player] of Object.entries(this.getOtherSnakes())) {
+            if (player.getLength() > 0) {
+                player.move();
+                this.getPresenter().setSnakeDirection(player, this);
+            }
         }
 
-        this.getSnake().updateOldPos();
+        this.getSnake().move();
     }
 }

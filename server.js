@@ -62,20 +62,22 @@ io.on('connection', function (socket) {
     });
 
     // when a player moves, update the player data
-    socket.on('playerMovement', function (movementData) {
-        players[socket.id].position = new coordinateJS.Coordinate(movementData.x, movementData.y);
-        // emit a message to all players about the player that moved
-        io.emit('playerMoved', players[socket.id]);
+    // socket.on('playerMovement', function (dir, nextDir) {
+    //     // emit a message to all players about the player that moved
+    //     // io.emit('playerMoved', dir, nextDir, socket.id);
+    // });
+
+    socket.on('dirChange', function (nextDir) {
+        console.log("nextDir: " + nextDir);
+        io.emit('dirChange', nextDir, socket.id);
     });
 
     socket.on('appleCollected', function (snake) {
 
-        // let clientSnake = data.snake;
+        console.log("apple Collected");
+
         let segments = snake.segments;
-        // let socketID = data.socketID;
-
         let playerPosition = new coordinateJS.Coordinate(convertYToRow(snake.position.y), convertXToCol(snake.position.x));
-
         let player = new playerJS.Player(playerPosition, socket.id, snake.color);
 
         for (let segment of segments) {
@@ -83,16 +85,11 @@ io.on('connection', function (socket) {
             player.addSegment(segmentPosition);
         }
 
-        // console.log("socketID: " + socketID);
-        // console.log("clientSnake: " + clientSnake);
-        // console.log("segments: " + segments);
-        // console.log("length: " + segments.length);
-        // console.log("headX: " + segments[0].icons[0].x);
-        // console.log("headY: " + segments[0].icons[0].y);
-
         let team = players[socket.id].team;
         updateScores(team);
         updateApple(player);
+        console.log("grow Player: ");
+        io.emit("growPlayer", socket.id);
     });
 
     socket.on('playerDied', function () {
@@ -103,8 +100,10 @@ io.on('connection', function (socket) {
         );
         socket.emit('currentPlayers', players);
         socket.emit('appleLocation', apple.getPosition());
-        io.emit("playerMoved", players[socket.id]);
     });
+
+
+    console.log("Tick");
 });
 
 server.listen(8081, function () {
@@ -154,11 +153,6 @@ function isOverlapping(item1, item2) {
 function isAppleOverlappingPlayer(apple, player) {
 
     for (let segment of player.segments) {
-
-        // console.log("apple.getPosition().getX(): " + apple.getPosition().getRow());
-        // console.log("apple.getPosition().getY(): " + apple.getPosition().getCol());
-        // console.log("segment.icons[0].x: " + segment.icons[0].x);
-        // console.log("segment.icons[0].y: " + segment.icons[0].y);
 
         if (isOverlapping(apple.getPosition(), segment)) {
             return true;
@@ -220,3 +214,10 @@ function getRandomCoordinate(scale) {
 function getRandomNum(scale) {
     return Math.floor(Math.random() * scale);
 }
+
+function tick() {
+    io.emit("tick");
+    setTimeout(tick, 20);
+}
+
+tick();
