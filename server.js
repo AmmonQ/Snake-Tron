@@ -214,10 +214,3 @@ function getRandomCoordinate(scale) {
 function getRandomNum(scale) {
     return Math.floor(Math.random() * scale);
 }
-
-function tick() {
-    io.emit("tick");
-    setTimeout(tick, 20);
-}
-
-tick();

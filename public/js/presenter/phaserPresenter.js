@@ -19,7 +19,6 @@ export class PhaserPresenter {
         this.RED = 0xFF0000;
         this.ROW_COL_SIZE = 32;
 
-        this.appleCollected = false;
         this.phaserView = new PhaserView(phaserPtr);
     }
 
@@ -33,14 +32,6 @@ export class PhaserPresenter {
 
     getRowColSize() {
         return this.ROW_COL_SIZE;
-    }
-
-    isAppleCollected() {
-        return this.appleCollected;
-    }
-
-    setAppleCollected(appleCollected) {
-        this.appleCollected = appleCollected;
     }
 
     getPhaserView() {
@@ -118,7 +109,7 @@ export class PhaserPresenter {
         this.drawBorder(ALPHA);
     }
 
-    getPlayerNextDirection(cursors, playerDirection) {
+    getPlayerNextDirection(cursors, playerDirection, nextDir) {
 
         if (cursors.left.isDown && playerDirection !== Directions.RIGHT) {
             return Directions.LEFT;
@@ -129,7 +120,7 @@ export class PhaserPresenter {
         } else if (cursors.down.isDown && playerDirection !== Directions.UP) {
             return Directions.DOWN;
         } else {
-            return playerDirection;
+            return nextDir;
         }
     }
 
@@ -156,13 +147,13 @@ export class PhaserPresenter {
         return (this.isCoordinateAligned(position.x) && this.isCoordinateAligned(position.y));
     }
 
-    setSnakeDirection(snake, game) {
-
+    setSnakeDirection(snake) {
         if (!this.areCoordinatesAligned(snake.getHead())) {
             return;
         }
+        console.log("setting snake direction");
 
-        game.addPlayerIcon(snake.getSegments());
+
         snake.updateDirection();
     }
 }

@@ -24,10 +24,6 @@ export class Snake {
         };
     }
 
-    setMovDelta(movDelta) {
-        this.movDelta = movDelta;
-    }
-
     getMovDelta() {
         return this.movDelta;
     }
@@ -85,31 +81,12 @@ export class Snake {
         return this.getHead().y
     }
 
-    getOldX() {
-        return this.oldPosition.x;
-    }
-
-    getOldY() {
-        return this.oldPosition.y;
-    }
-
     getLastSegment() {
         return this.getSegmentsAt(this.getLength() - 1);
     }
 
     updateOldPos() {
         this.setOldPosition(this.getX(), this.getY());
-    }
-
-    hasMoved() {
-        return this.getX() !== this.getOldX() || this.getY() !== this.getOldY();
-    }
-
-    getPos() {
-        return {
-            x: this.getX(),
-            y: this.getY()
-        };
     }
 
     getNewPos(x, y, delta) {
@@ -219,10 +196,6 @@ export class Snake {
         }
 
         this.color = color;
-    }
-
-    getColor() {
-        return this.color;
     }
 
     updateDirection() {

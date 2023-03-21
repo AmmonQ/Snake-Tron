@@ -6,6 +6,8 @@ import { IndexView } from "../view/indexView.js";
 
 export class Game {
 
+    static GAME_SPEED = 20;
+
     constructor(gamePtr) {
         this.gamePtr = gamePtr;
         this.indexView = new IndexView();
@@ -15,8 +17,7 @@ export class Game {
         this.cursors = this.gamePtr.input.keyboard.createCursorKeys();
 
         this.apple = null;
-        this.snake = new Snake(this.getPresenter().getRowColSize());
-        this.otherSnakes = {};
+        this.snakes = {};
     }
 
     getApple() {
@@ -40,11 +41,11 @@ export class Game {
     }
 
     getSnake() {
-        return this.snake;
+        return this.getSnakes()[this.getServerInterface().getSocketID()];
     }
 
-    getOtherSnakes() {
-        return this.otherSnakes;
+    getSnakes() {
+        return this.snakes;
     }
 
     killPlayer() {
@@ -62,62 +63,43 @@ export class Game {
     }
 
     addPlayerIcon() {
-
-        if (!this.getPresenter().isAppleCollected()) {
-            return;
-        }
-
         this.getSnake().addBodySegment(this.getPresenter().getPhaserView());
-        this.getPresenter().setAppleCollected(false);
     }
 
-    addOtherPlayers(row, col, id) {
-
+    addPlayer(row, col, id) {
         let presenter = this.getPresenter();
         const player = new Snake(this.getPresenter().getRowColSize());
         player.addHeadSegment(presenter.convertColToX(col), presenter.convertRowToY(row), presenter.getPhaserView());
-        this.getOtherSnakes()[id] = player;
-    }
-
-    addPlayer(row, col, team) {
-
-        this.getSnake().addHeadSegment(this.getPresenter().convertColToX(col), this.getPresenter().convertRowToY(row), this.getPresenter().getPhaserView());
-        this.getSnake().setColor(this.getPresenter().convertToColor(team), this.getPresenter().getPhaserView());
+        this.getSnakes()[id] = player;
     }
 
     addPlayers(players) {
-
+        let i = 0;
         for (const [key, value] of Object.entries(players)) {
-
-            let row = value.position.row;
-            let col = value.position.col;
-
-            if (key === this.getServerInterface().getSocketID()) {
-                this.addPlayer(row, col, value.team);
-            } else {
-                this.addOtherPlayers(row, col, value.id);
-            }
+            console.log("player: " + i);
+            i++;
+            this.addPlayer(value.position.row, value.position.col, value.id);
         }
     }
 
     disconnect(snakeID) {
 
-        let player = this.getOtherSnakes()[snakeID];
+        let player = this.getSnakes()[snakeID];
         player.destroy();
     }
 
     growPlayer(playerID) {
         console.log("grow player");
-        console.log("playerID: " + playerID);
-        let player = this.getOtherSnakes()[playerID];
+        let player = this.getSnakes()[playerID];
         if (typeof player !== "undefined") {
-            console.log("I'm in");
             player.addBodySegment(this.getPresenter().getPhaserView());
         }
     }
 
     setPlayerDirection(nextDir, socketID) {
-        let player = this.getOtherSnakes()[socketID];
+        console.log("nextDir: " + nextDir);
+        let player = this.getSnakes()[socketID];
+
         if (typeof player !== "undefined") {
             if (player.getDirection() === "none") {
                 player.setDirection(nextDir);
@@ -139,17 +121,6 @@ export class Game {
         }
 
         this.setApple(this.getPresenter().addImage(row, col, Images.APPLE));
-
-        let head = this.getSnake().getHead();
-        let game = this;
-        let callbackFunc = () => {
-            game.getPresenter().setAppleCollected(true);
-            game.getApple().destroy();
-            game.setApple(null);
-            game.getServerInterface().notifyAppleCollected(game.getSnake());
-        }
-
-        this.getPresenter().addOverlap(head, this.getApple(), callbackFunc)
     }
 
     preload() {
@@ -160,9 +131,14 @@ export class Game {
         this.setServerInterface(new ServerInterface(this));
         this.getPresenter().drawBoard();
         this.getIndexView().initScoreText();
+        this.startTick();
     }
 
     update() {
+
+        if (typeof this.getSnake() === "undefined") {
+            return;
+        }
 
         if (!this.getSnake().isAlive()) {
             return;
@@ -174,12 +150,12 @@ export class Game {
         }
 
         // set direction and position
-        let nextDir = this.getPresenter().getPlayerNextDirection(this.getCursors(), this.getSnake().getDirection());
+        let nextDir = this.getPresenter().getPlayerNextDirection(this.getCursors(), this.getSnake().getDirection(),
+            this.getSnake().getNextDirection());
+
         if (nextDir !== this.getSnake().getNextDirection()) {
-            this.getServerInterface().notifyDirectionChanged(this.getSnake().getDirection(), nextDir);
+            this.getServerInterface().notifyDirectionChanged(nextDir);
         }
-        this.getSnake().setNextDirection(nextDir);
-        this.getPresenter().setSnakeDirection(this.getSnake(), this);
 
         if (this.getSnake().isOverlapping()) {
             this.killPlayer();
@@ -187,18 +163,43 @@ export class Game {
         }
 
         this.getSnake().updateOldPos();
-
     }
 
-    tick() {
+    isOverlapping(x1, y1, x2, y2) {
+        if (Math.abs(x1 - x2) >= this.getPresenter().getRowColSize()) {
+            return false;
+        } else if (Math.abs(y1 - y2) >= this.getPresenter().getRowColSize()) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 
-        for (const [playerID, player] of Object.entries(this.getOtherSnakes())) {
-            if (player.getLength() > 0) {
-                player.move();
-                this.getPresenter().setSnakeDirection(player, this);
+    onAppleCollected() {
+        this.getApple().destroy();
+        this.setApple(null);
+        this.getServerInterface().notifyAppleCollected(this.getSnake());
+    }
+
+    startTick() {
+
+        let game = this;
+
+        function tick() {
+            for (const [playerID, player] of Object.entries(game.getSnakes())) {
+                if (player.getLength() > 0) {
+                    game.getPresenter().setSnakeDirection(player);
+                    player.move();
+
+                    if (game.getApple()) {
+                        if (game.isOverlapping(game.getApple().x, game.getApple().y, player.getHead().x, player.getHead().y)) {
+                            game.onAppleCollected();
+                        }
+                    }
+                }
             }
         }
 
-        this.getSnake().move();
+        setInterval(tick, Game.GAME_SPEED);
     }
 }
