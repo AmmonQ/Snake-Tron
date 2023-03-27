@@ -13,9 +13,6 @@ const TEAM_COLORS = ['blue', 'red'];
 const BLUE_INDEX = 0;
 const RED_INDEX = 1;
 
-const BORDER_SIZE = 32;
-
-const ROW_COL_SIZE = 32;
 const NUM_ROWS = 20;
 const NUM_COLS = 30;
 
@@ -28,7 +25,7 @@ let players = {};
 let clientSnakes = {};
 
 let apple = new appleJS.Apple(
-    new coordinateJS.Coordinate(getRandomX(), getRandomY())
+    new coordinateJS.Coordinate(getRandomRow(), getRandomCol())
 );
 
 app.use(express.static(__dirname + '/public'));
@@ -42,7 +39,7 @@ io.on('connection', function (socket) {
 
     // create a new player and add it to our players object
     players[socket.id] = new playerJS.Player(
-        new coordinateJS.Coordinate(getRandomX(), getRandomY()), 
+        new coordinateJS.Coordinate(getRandomRow(), getRandomCol()), 
         socket.id, 
         getRandomTeam()
     );
@@ -65,46 +62,63 @@ io.on('connection', function (socket) {
     });
 
     // when a player moves, update the player data
-    socket.on('playerMovement', function (movementData) {
-        players[socket.id].position = new coordinateJS.Coordinate(movementData.x, movementData.y);
-        // emit a message to all players about the player that moved
-        io.emit('playerMoved', players[socket.id]);
+    // socket.on('playerMovement', function (dir, nextDir) {
+    //     // emit a message to all players about the player that moved
+    //     // io.emit('playerMoved', dir, nextDir, socket.id);
+    // });
+
+    socket.on('dirChange', function (nextDir) {
+        console.log("nextDir: " + nextDir);
+        io.emit('dirChange', nextDir, socket.id);
     });
 
-    socket.on('appleCollected', function (data) {
+    socket.on('appleCollected', function (snake) {
 
-        let clientSnake = data.snake;
-        let segments = clientSnake.segments;
-        let socketID = data.socketID;
+        console.log("apple Collected");
 
-        console.log("socketID: " + socketID);
-        console.log("clientSnake: " + clientSnake);
-        console.log("segments: " + segments);
-        console.log("length: " + segments.length);
-        console.log("headX: " + segments[0].icons[0].x);
-        console.log("headY: " + segments[0].icons[0].y);
+        let segments = snake.segments;
+        let playerPosition = new coordinateJS.Coordinate(convertYToRow(snake.position.y), convertXToCol(snake.position.x));
+        let player = new playerJS.Player(playerPosition, socket.id, snake.color);
 
+        for (let segment of segments) {
+            let segmentPosition = new coordinateJS.Coordinate(convertYToRow(segment.icons[0].y), convertXToCol(segment.icons[0].x));
+            player.addSegment(segmentPosition);
+        }
 
         let team = players[socket.id].team;
         updateScores(team);
-        updateApple(segments);
+        updateApple(player);
+        console.log("grow Player: ");
+        io.emit("growPlayer", socket.id);
     });
 
     socket.on('playerDied', function () {
+
         players[socket.id] = new playerJS.Player(
-            new coordinateJS.Coordinate(getRandomX(), getRandomY()),
+            new coordinateJS.Coordinate(getRandomRow(), getRandomCol()),
             socket.id,
             players[socket.id].team
         );
-        socket.emit('currentPlayers', players);
-        socket.emit('appleLocation', apple.getPosition());
-        io.emit("playerMoved", players[socket.id]);
+        console.log("Player died!");
+        io.emit("playerDead", players[socket.id]);
+
     });
+
+
+    console.log("Tick");
 });
 
 server.listen(8081, function () {
     console.log(`Listening on ${server.address().port}`);
 });
+
+function convertYToRow(y) {
+    return Math.floor((y - 32) / 32);
+}
+
+function convertXToCol(x) {
+    return Math.floor((x - 32) / 32);
+}
 
 function updateScores(team) {
 
@@ -122,49 +136,77 @@ function updateScores(team) {
     io.emit('scoreUpdate', scores);
 }
 
-function updateApple(segments) {
-    setAppleCoordinates(segments)
+function updateApple(player) {
+    setAppleCoordinates(player)
     io.emit('appleLocation', apple.getPosition());
 }
 
+function isOverlapping(item1, item2) {
+
+    if (item1.row !== item2.row) {
+        return false;
+    } else if (item1.col !== item2.col) {
+        return false;
+    }
+
+    return true;
+}
+
+function isAppleOverlappingPlayer(apple, player) {
+
+    for (let segment of player.segments) {
+
+        if (isOverlapping(apple.getPosition(), segment)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // This is what the server should do, make decisions and send information about the decision to clients
-function setAppleCoordinates(segments) {
-    console.log("Hello there");
+function setAppleCoordinates(player) {
 
-    var appleXPos = getRandomX();
-    var appleYPos = getRandomY();
-    var playerXPos = segments[0].icons[0].x;
-    var playerYPos = segments[0].icons[0].y;
+    apple.setPosition(new coordinateJS.Coordinate(getRandomRow(), getRandomCol()));
 
-    if (appleXPos !== playerXPos || appleYPos !== playerYPos) {
-        apple.setPosition(new coordinateJS.Coordinate(appleXPos, appleYPos));
+    if (!isAppleOverlappingPlayer(apple, player)) {
         return;
     }
 
-    // var segments = playerYPos[socket.id].getSegments();
-    for (i = ROW_COL_SIZE; i < NUM_COLS*31; i += ROW_COL_SIZE) {
-        for (j = ROW_COL_SIZE; j < NUM_ROWS*31; j += ROW_COL_SIZE) {
-            if (i !== playerXPos || j !== playerYPos/* || isOverlappingWithApple(appleXPos, appleYPos, segments)*/) {
-                console.log("True!! i - j: " + i.toString() + " - " + j.toString());
-                apple.setPosition(new coordinateJS.Coordinate(i, j));
+    let startRow = apple.getPosition().row;
+    let startCol = apple.getPosition().col;
+
+    for (let i = 0; i < NUM_ROWS; i++) {
+        let row = i + startRow;
+        if (row >= NUM_ROWS) {
+            row = row - NUM_ROWS;
+        }
+        for (let j = 0; j < NUM_COLS; j++) {
+            let col = j + startCol;
+            if (col >= NUM_COLS) {
+                col = col - NUM_COLS;
+            }
+            apple.setPosition(new coordinateJS.Coordinate(row, col));
+            if (!isAppleOverlappingPlayer(apple, player)) {
                 return;
             }
         }
     }
 
-    apple.setPosition(new coordinateJS.Coordinate(getRandomX(), getRandomY()));
+    console.log("There is no room for an apple anywhere");
+    apple.setPosition(-1, -1);
 }
 
 function getRandomTeam() {
     return TEAM_COLORS[getRandomNum(NUM_TEAMS)];
 }
 
-function getRandomX() {
-    return (getRandomCoordinate(NUM_COLS) * ROW_COL_SIZE) + BORDER_SIZE;
+function getRandomRow() {
+    return getRandomCoordinate(NUM_ROWS);
 }
 
-function getRandomY() {
-    return (getRandomCoordinate(NUM_ROWS) * ROW_COL_SIZE) + BORDER_SIZE;
+function getRandomCol() {
+    return getRandomCoordinate(NUM_COLS);
 }
 
 function getRandomCoordinate(scale) {

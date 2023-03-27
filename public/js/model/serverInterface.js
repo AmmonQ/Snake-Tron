@@ -1,8 +1,19 @@
 export class ServerInterface {
 
+    // emission keywords
     static APPLE_COLLECTED = "appleCollected";
     static PLAYER_DIED = "playerDied";
-    static PLAYER_MOVED = "playerMoved";
+    static DIR_CHANGED = "dirChange";
+
+    // reception keywords
+    static CURRENT_PLAYERS = "currentPlayers";
+    static NEW_PLAYER = "newPlayer";
+    static DISCONNECTED = "disconnected";
+    static SCORE_UPDATE = "scoreUpdate";
+    static APPLE_LOCATION = "appleLocation";
+    static GROW_PLAYER = "growPlayer";
+    static PLAYER_DEAD = "playerDead";
+
 
     constructor(game) {
         this.socket = io();
@@ -33,27 +44,29 @@ export class ServerInterface {
     }
 
     notifyAppleCollected(snake) {
-        this.emit(ServerInterface.APPLE_COLLECTED, {
-            "snake": snake,
-            "socketID": this.getSocketID()
-        });
+        this.emit(ServerInterface.APPLE_COLLECTED, snake);
     }
 
     notifyPlayerDied() {
         this.emit(ServerInterface.PLAYER_DIED);
     }
 
-    notifyPlayerMoved(newPos) {
-        this.emit(ServerInterface.PLAYER_MOVED, newPos);
+    notifyDirectionChanged(nextDir) {
+        this.emit(ServerInterface.DIR_CHANGED, nextDir);
     }
-
     setUpEndpoints() {
 
-        this.receive('currentPlayers', (players) => (this.game.addPlayers(players)));
-        this.receive('newPlayer', (playerInfo) => (this.game.addOtherPlayers(playerInfo)));
-        this.receive('disconnected', (playerID) => (this.game.disconnect(playerID)));
-        this.receive('playerMoved', (playerInfo) => (this.game.moveOtherPlayer(playerInfo)));
-        this.receive('scoreUpdate', (scores) => (this.game.updateScores(scores)));
-        this.receive('appleLocation', (appleLocation) => (this.game.updateApple(appleLocation)));
+        this.receive(ServerInterface.CURRENT_PLAYERS, (players) => (
+            this.game.addPlayers(players)
+        ));
+        this.receive(ServerInterface.NEW_PLAYER, (newPlayer) => (
+            this.game.addPlayer(newPlayer.position.row, newPlayer.position.col, newPlayer.id)
+        ));
+        this.receive(ServerInterface.DISCONNECTED, (playerID) => (this.game.disconnect(playerID)));
+        this.receive(ServerInterface.DIR_CHANGED, (nextDir, playerID) => (this.game.setPlayerDirection(nextDir, playerID)));
+        this.receive(ServerInterface.SCORE_UPDATE, (scores) => (this.game.updateScores(scores)));
+        this.receive(ServerInterface.APPLE_LOCATION, (appleLocation) => (this.game.updateApple(appleLocation.row, appleLocation.col)));
+        this.receive(ServerInterface.GROW_PLAYER, (playerID) => (this.game.growPlayer(playerID)));
+        this.receive(ServerInterface.PLAYER_DEAD, (player) => this.game.playerDead(player));
     }
 }

@@ -1,22 +1,22 @@
 module.exports.Coordinate = class Coordinate {
 
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
+    constructor(row, col) {
+        this.row = row;
+        this.col = col;
     }
 
-    getX() {
-        return this.x;
+    getRow() {
+        return this.row;
     }
 
-    getY() {
-        return this.y;
+    getCol() {
+        return this.col;
     }
 
     toString() {
         return "{" + "\n" +
-                    "\tx: " + this.x + "\n" +
-                    "\ty: " + this.y + "\n" +
+                    "\trow: " + this.row + "\n" +
+                    "\tcol: " + this.col + "\n" +
                "}";
     }
 }

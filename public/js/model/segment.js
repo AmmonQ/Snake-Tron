@@ -2,23 +2,10 @@ export class Segment {
 
     constructor() {
         this.icons = [];
-        this.overlap = false;
     }
 
     addIcon(icon) {
         this.icons.push(icon);
-    }
-
-    getIcons() {
-        return this.icons;
-    }
-
-    hasOverlap() {
-        return this.overlap;
-    }
-
-    setOverlap(overlap) {
-        this.overlap = overlap;
     }
 
     getFirst() {
