@@ -81,7 +81,6 @@ export class Game {
     }
 
     growPlayer(playerID) {
-        console.log("grow player");
         let player = this.getSnakes()[playerID];
         if (typeof player !== "undefined") {
             player.addBodySegment(this.getPresenter().getPhaserView());
@@ -89,7 +88,6 @@ export class Game {
     }
 
     setPlayerDirection(nextDir, socketID) {
-        console.log("nextDir: " + nextDir);
         let player = this.getSnakes()[socketID];
 
         if (typeof player !== "undefined") {
@@ -170,7 +168,6 @@ export class Game {
     }
 
     playerDead(player) {
-        console.log("playerDead");
         let playerID = player.id;
         let playerPos = player.position;
 
