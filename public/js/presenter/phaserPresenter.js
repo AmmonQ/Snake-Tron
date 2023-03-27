@@ -150,8 +150,6 @@ export class PhaserPresenter {
         if (!this.areCoordinatesAligned(snake.getHead())) {
             return;
         }
-        console.log("setting snake direction");
-
 
         snake.updateDirection();
     }

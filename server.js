@@ -35,8 +35,6 @@ app.get('/', function (req, res) {
 });
 
 io.on('connection', function (socket) {
-    console.log('a user connected: ', socket.id);
-
     // create a new player and add it to our players object
     players[socket.id] = new playerJS.Player(
         new coordinateJS.Coordinate(getRandomRow(), getRandomCol()), 
@@ -55,7 +53,6 @@ io.on('connection', function (socket) {
 
     // when a player disconnects, remove them from our players object
     socket.on('disconnect', function () {
-        console.log('User disconnected: ', socket.id);
         delete players[socket.id];
         // emit a message to all players to remove this player
         io.emit('disconnected', socket.id);
@@ -68,13 +65,10 @@ io.on('connection', function (socket) {
     // });
 
     socket.on('dirChange', function (nextDir) {
-        console.log("nextDir: " + nextDir);
         io.emit('dirChange', nextDir, socket.id);
     });
 
     socket.on('appleCollected', function (snake) {
-
-        console.log("apple Collected");
 
         let segments = snake.segments;
         let playerPosition = new coordinateJS.Coordinate(convertYToRow(snake.position.y), convertXToCol(snake.position.x));
@@ -88,7 +82,6 @@ io.on('connection', function (socket) {
         let team = players[socket.id].team;
         updateScores(team);
         updateApple(player);
-        console.log("grow Player: ");
         io.emit("growPlayer", socket.id);
     });
 
@@ -99,13 +92,9 @@ io.on('connection', function (socket) {
             socket.id,
             players[socket.id].team
         );
-        console.log("Player died!");
         io.emit("playerDead", players[socket.id]);
 
     });
-
-
-    console.log("Tick");
 });
 
 server.listen(8081, function () {
@@ -193,7 +182,6 @@ function setAppleCoordinates(player) {
         }
     }
 
-    console.log("There is no room for an apple anywhere");
     apple.setPosition(-1, -1);
 }
 
