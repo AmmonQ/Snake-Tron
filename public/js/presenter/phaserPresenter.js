@@ -12,7 +12,6 @@ export class PhaserPresenter {
 
     static BG_COLOR_STR = '#009C29'
 
-
     constructor(phaserPtr) {
 
         this.BLUE = 0x0000FF;

@@ -12,6 +12,8 @@ export class ServerInterface {
     static SCORE_UPDATE = "scoreUpdate";
     static APPLE_LOCATION = "appleLocation";
     static GROW_PLAYER = "growPlayer";
+    static PLAYER_DEAD = "playerDead";
+
 
     constructor(game) {
         this.socket = io();
@@ -52,7 +54,6 @@ export class ServerInterface {
     notifyDirectionChanged(nextDir) {
         this.emit(ServerInterface.DIR_CHANGED, nextDir);
     }
-
     setUpEndpoints() {
 
         this.receive(ServerInterface.CURRENT_PLAYERS, (players) => (
@@ -66,5 +67,6 @@ export class ServerInterface {
         this.receive(ServerInterface.SCORE_UPDATE, (scores) => (this.game.updateScores(scores)));
         this.receive(ServerInterface.APPLE_LOCATION, (appleLocation) => (this.game.updateApple(appleLocation.row, appleLocation.col)));
         this.receive(ServerInterface.GROW_PLAYER, (playerID) => (this.game.growPlayer(playerID)));
+        this.receive(ServerInterface.PLAYER_DEAD, (player) => this.game.playerDead(player));
     }
 }

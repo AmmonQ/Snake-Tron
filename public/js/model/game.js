@@ -48,12 +48,6 @@ export class Game {
         return this.snakes;
     }
 
-    killPlayer() {
-
-        this.getSnake().destroy();
-        this.getServerInterface().notifyPlayerDied();
-    }
-
     getServerInterface() {
         return this.serverInterface;
     }
@@ -74,10 +68,8 @@ export class Game {
     }
 
     addPlayers(players) {
-        let i = 0;
+
         for (const [key, value] of Object.entries(players)) {
-            console.log("player: " + i);
-            i++;
             this.addPlayer(value.position.row, value.position.col, value.id);
         }
     }
@@ -144,11 +136,6 @@ export class Game {
             return;
         }
 
-        if (!this.getPresenter().isPlayerInBounds(this.getSnake().getHead())) {
-            this.killPlayer();
-            return;
-        }
-
         // set direction and position
         let nextDir = this.getPresenter().getPlayerNextDirection(this.getCursors(), this.getSnake().getDirection(),
             this.getSnake().getNextDirection());
@@ -158,7 +145,7 @@ export class Game {
         }
 
         if (this.getSnake().isOverlapping()) {
-            this.killPlayer();
+            this.getServerInterface().notifyPlayerDied();
             return;
         }
 
@@ -166,6 +153,7 @@ export class Game {
     }
 
     isOverlapping(x1, y1, x2, y2) {
+
         if (Math.abs(x1 - x2) >= this.getPresenter().getRowColSize()) {
             return false;
         } else if (Math.abs(y1 - y2) >= this.getPresenter().getRowColSize()) {
@@ -181,21 +169,39 @@ export class Game {
         this.getServerInterface().notifyAppleCollected(this.getSnake());
     }
 
+    playerDead(player) {
+        console.log("playerDead");
+        let playerID = player.id;
+        let playerPos = player.position;
+
+        let snake = this.getSnakes()[playerID];
+        snake.destroy();
+        this.addPlayer(playerPos.row, playerPos.col, playerID);
+    }
+
+
     startTick() {
 
         let game = this;
 
         function tick() {
+
             for (const [playerID, player] of Object.entries(game.getSnakes())) {
+
                 if (player.getLength() > 0) {
+
                     game.getPresenter().setSnakeDirection(player);
                     player.move();
-
 
                     if (playerID !== game.getServerInterface().getSocketID()) {
                         continue;
                     }
-                    
+
+                    if (!game.getPresenter().isPlayerInBounds(game.getSnake().getHead())) {
+                        game.getServerInterface().notifyPlayerDied();
+                        return;
+                    }
+
                     if (game.getApple()) {
                         if (game.isOverlapping(game.getApple().x, game.getApple().y, player.getHead().x, player.getHead().y)) {
                             game.onAppleCollected();

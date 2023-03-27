@@ -93,13 +93,15 @@ io.on('connection', function (socket) {
     });
 
     socket.on('playerDied', function () {
+
         players[socket.id] = new playerJS.Player(
             new coordinateJS.Coordinate(getRandomRow(), getRandomCol()),
             socket.id,
             players[socket.id].team
         );
-        socket.emit('currentPlayers', players);
-        socket.emit('appleLocation', apple.getPosition());
+        console.log("Player died!");
+        io.emit("playerDead", players[socket.id]);
+
     });
 
 
