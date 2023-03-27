@@ -136,7 +136,7 @@ export class Snake {
 
     addBodySegment(view) {
         this.addSegment(this.getLast().x, this.getLast().y, view);
-        this.getLastSegment().setColor(this.color, view);
+        this.getLastSegment().setColor(this.getHexFromColor(this.color), view);
     }
 
     isSegmentOverlapping(segment) {
@@ -200,5 +200,18 @@ export class Snake {
 
     updateDirection() {
         this.setDirection(this.getNextDirection());
+    }
+
+    getHexFromColor(color) {
+        console.log("color into hex:" + color);
+        switch (color) {
+            case "blue":
+                return 0x0000FF
+            case "red":
+                return 0xFF0000
+            default :
+                console.log("Inside default call")
+                return 0xFFFFFF
+        }
     }
 }
