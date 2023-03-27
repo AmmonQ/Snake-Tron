@@ -23,9 +23,9 @@ export class Images {
             new Image(Images.ENEMY_HEAD, 'o_snake_head.png'),
             new Image(Images.ENEMY_BODY, 'o_snake_body.png'),
             new Image(Images.ENEMY_TAIL, 'o_snake_tail.png'),
-            new Image(Images.PLAYER_HEAD, 'g_snake_head.png'),
-            new Image(Images.PLAYER_BODY, 'g_snake_body.png'),
-            new Image(Images.PLAYER_TAIL, 'g_snake_tail.png')
+            new Image(Images.PLAYER_HEAD, 'g_snake_head_blank.png'),
+            new Image(Images.PLAYER_BODY, 'g_snake_body_blank.png'),
+            new Image(Images.PLAYER_TAIL, 'g_snake_tail_blank.png')
         ];
     }
 

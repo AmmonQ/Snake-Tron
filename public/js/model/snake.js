@@ -136,7 +136,8 @@ export class Snake {
 
     addBodySegment(view) {
         this.addSegment(this.getLast().x, this.getLast().y, view);
-        this.getLastSegment().setColor(this.color, view);
+        this.getLastSegment().setColor(0xffffff, view);
+        console.log("Color: " + this.color);
     }
 
     isSegmentOverlapping(segment) {
@@ -192,10 +193,10 @@ export class Snake {
     setColor(color, view) {
 
         for (let i = 0; i < this.getLength(); i++) {
-            this.getSegmentsAt(i).setColor(color, view);
+            this.getSegmentsAt(i).setColor(0xffffff, view);
         }
 
-        this.color = color;
+        this.color = 0xffffff;
     }
 
     updateDirection() {
