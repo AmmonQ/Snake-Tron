@@ -191,6 +191,11 @@ export class Game {
                     game.getPresenter().setSnakeDirection(player);
                     player.move();
 
+
+                    if (playerID !== game.getServerInterface().getSocketID()) {
+                        continue;
+                    }
+                    
                     if (game.getApple()) {
                         if (game.isOverlapping(game.getApple().x, game.getApple().y, player.getHead().x, player.getHead().y)) {
                             game.onAppleCollected();
